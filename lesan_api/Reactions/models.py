@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.contrib.auth.models import User
+from django.utils.translation import gettext as _
 
 class Reaction(models.Model):
     REACTION_CHOICES = (
@@ -38,12 +38,17 @@ class Reaction(models.Model):
         ('💪🏾', 'Flexed biceps'),
         ('🙏🏾', 'Folded hands'),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    reaction = models.CharField(max_length=255, choices=REACTION_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    
+    user = models.ForeignKey("Users.User", verbose_name=_("User"), on_delete=models.CASCADE)
+    reaction = models.CharField(_("Reaction"), max_length=255, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
+    content_type = models.ForeignKey(ContentType, verbose_name=_("Content type"), on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField(_("Object id"))
     content_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):
         return f'{self.user.username} reacted with {self.reaction} on {self.content_object}'
+    
+    class Meta:
+        verbose_name = _("Reaction")
+        verbose_name_plural = _("Reactions")
