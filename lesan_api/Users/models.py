@@ -2,7 +2,8 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
-
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        Group, PermissionsMixin)
 from Users.fields import IntegerRangeField
 # Create your models here.
 
@@ -101,7 +102,7 @@ class Password_reset(models.Model):
     class Meta:
         verbose_name = _("Password reset")
         verbose_name_plural = _("Password reset")
-
+        
 
 class Device(models.Model):
     user = models.ForeignKey("User", verbose_name=_(
