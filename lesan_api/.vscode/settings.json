@@ -1,0 +1,36 @@
+{
+    "python.autoComplete.addBrackets": false,
+    "python.autoComplete.addImports": "relative",
+    "python.analysis.autoSearchPaths": true,
+    "python.autoComplete.addCallParenthesis": false,
+    "python.jediEnabled": false,
+    "python.languageServer": "Pylance",
+    "python.analysis.completeFunctionParens": false,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8"
+    },
+    "python.formatting.provider": "none",
+    "python.autoComplete.extraPaths": [
+        "F:/Projects/lesan/lesan_api/lesan_env/Lib/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "F:/Projects/lesan/lesan_api/lesan_env/Lib/site-packages"
+    ],
+    "python.analysis.packageIndexDepths": [
+        {
+            "name": "",
+            "depth": 2,
+            "includeAllSymbols": true
+        },
+        // ["sklearn", 2],
+        // ["matplotlib", 2],
+        // ["scipy", 2],
+        {
+            "name": "django",
+            "depth": 2,
+            "includeAllSymbols": true
+        },
+        // ["numpy",2]
+    ],
+    "python.analysis.typeCheckingMode": "off",
+}
