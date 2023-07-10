@@ -18,9 +18,10 @@ class MileStoneType(models.Model):
         ('write_5_poem', 'Descendant of Walt Whitman'),
         ('write_10_poem', 'Descendant of Walt Whitman'),
         ('write_15_poem', 'Descendant of Emily Dickson'),
-        ('write_50_poem', 'Descendant of Emily Dickson'),
+        ('write_50_poem', 'Descendant of Tsegaye Gabre-Medhin'),
     )
 
+    milestone_name = models.CharField(max_length=255, blank=False, null=True)
     milestone_type = models.CharField(max_length=255, choices=TYPE_CHOICES)
     milestone_desc = models.CharField(max_length=255, blank=False, null=True)
     milestone_pic = models.ImageField(
