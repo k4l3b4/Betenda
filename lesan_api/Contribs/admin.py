@@ -1,32 +1,22 @@
 from django.contrib import admin
 
-from .models import Poem, Saying, Sentence, TargetLanguage, SourceLanguage, Word
+from .models import Poem, Saying, Sentence, Language, Word
 
 # Register your models here.
 
 
-@admin.register(SourceLanguage)
+@admin.register(Language)
 class Admin(admin.ModelAdmin):
     list_display = (
         "id",
         "language",
+        "language_type",
         "iso_code",
         "glottolog_code",
         "created_at",
         "edited_at",
     )
 
-
-@admin.register(TargetLanguage)
-class Admin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "language",
-        "iso_code",
-        "glottolog_code",
-        "created_at",
-        "edited_at",
-    )
 
 
 @admin.register(Word)
