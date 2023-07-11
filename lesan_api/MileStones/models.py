@@ -16,22 +16,28 @@ class MileStoneType(models.Model):
         ('30000_words', 'Contribute 30000 words'),
         ('write_a_poem', 'The poet'),
         ('write_5_poem', 'Descendant of Walt Whitman'),
-        ('write_10_poem', 'Descendant of Walt Whitman'),
         ('write_15_poem', 'Descendant of Emily Dickson'),
-        ('write_50_poem', 'Descendant of Tsegaye Gabre-Medhin'),
+        ('write_50_poem', 'Descendant of Tsegaye G/Medhin'),
     )
 
-    milestone_name = models.CharField(max_length=255, blank=False, null=True)
-    milestone_type = models.CharField(max_length=255, choices=TYPE_CHOICES)
-    milestone_desc = models.CharField(max_length=255, blank=False, null=True)
+    milestone_name = models.CharField(_("Name"), max_length=255, blank=False, null=True)
+    milestone_type = models.CharField(_("Type"), max_length=255, choices=TYPE_CHOICES)
+    milestone_desc = models.CharField(_("Description"), max_length=255, blank=False, null=True)
     milestone_pic = models.ImageField(
         _("Milestone picture"), upload_to='milestone/', max_length=None, blank=False, null=True)
-
+    
+    class Meta:
+        verbose_name = _("MileStone type")
+        verbose_name_plural = _("MileStone types")
 
 class MileStone(models.Model):
     user = models.ForeignKey(
         "Users.User", verbose_name=_("User"), on_delete=models.CASCADE)
     milestone = models.ForeignKey(
-        "MileStoneType", verbose_name=_(""), on_delete=models.CASCADE)
+        "MileStoneType", verbose_name=_("MileStone type"), on_delete=models.CASCADE)
     achievement_date = models.DateTimeField(
         _("Achievement date"), auto_now=False, auto_now_add=True)
+    
+    class Meta:
+        verbose_name = _("MileStone")
+        verbose_name_plural = _("MileStones")
