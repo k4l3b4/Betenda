@@ -1,9 +1,7 @@
 from rest_framework import generics
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from Users.models import Device, Invitation, User
-from Users.serializers import UserCreateSerializer
+from Users.serializers import UserCreateSerializer, UserTokenSerializer
 from lesan_api.methods import BadRequest, PermissionDenied, send_response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -33,40 +31,30 @@ class UserCreateView(generics.CreateAPIView):
 
 
 class LoginView(TokenObtainPairView):
-    permission_classes = (AllowAny,)
-    serializer_class = TokenObtainPairSerializer
+    permission_classes = [AllowAny,]
+    serializer_class = UserTokenSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid():
-            raise BadRequest(serializer.errors)
+    # def post(self, request):
+    #     serializer = UserTokenSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         validated_data = serializer.validate(serializer.validated_data)
+    #         return send_response(validated_data, 'Authentication successful')
+    #     raise BadRequest(serializer.errors)
+        
 
-        # Get the user's device information
-        device_id = request.device.device_id
-        device, created = Device.objects.get_or_create(
-            user=serializer.user,
-            device_id=device_id,
-            defaults={
-                'ip_address': request.META.get('REMOTE_ADDR', None),
-                'device_type': request.META.get('HTTP_USER_AGENT', None),
-                'device_name': request.device.device_name,
-                'city': request.device.city,
-                'country': request.device.country,
-                'operating_system': request.device.operating_system,
-                'logged_in': False,
-            }
-        )
+    # # Get the user's device information
+    # device, created = Device.objects.get_or_create(
+    #     user=serializer.user,
+    #     defaults={
+    #         'ip_address': request.META.get('REMOTE_ADDR', None),
+    #         'device_type': request.META.get('HTTP_USER_AGENT', None),
+    #         'device_name': f"{request.user_agent.device.family} - {request.user_agent.os.family}({request.user_agent.os.version_string})",
+    #         'browser_type': request.user_agent.browser.family,
+    #         'browser_version': request.user_agent.browser.version_string,
+    #         'operating_system': f"{request.user_agent.os.family} - {request.user_agent.os.version_string}",
+    #         'logged_in': False,
+    #     }
+    # )
 
-        if not device.logged_in:
-            return send_response(None, 'We have just sent you an email, authenticate your self', 200)
-
-        # The device exists, proceed with authentication and token generation
-        refresh = RefreshToken.for_user(serializer.user)
-        access = refresh.access_token
-        lifetime = refresh.access_token.lifetime.total_days()
-        data = {
-            'refresh': str(refresh),
-            'access': str(access),
-            'lifetime': int(lifetime),
-        }
-        return send_response(data, 'Authentication successful', 200)
+    # if not device.logged_in:
+    #     return send_response(None, 'We have just sent you an email, authenticate your self', 200)
