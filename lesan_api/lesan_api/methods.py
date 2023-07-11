@@ -179,22 +179,53 @@ def check_api_version(request, version, *args, **kwargs):
         return True
 
 
-def user_has_permission(user, groups):
-    """
-    Takes a user object, groups list and a school object to determine if the user is in the specified group and 
-    if school object is passed will also check if a user is related to the school
-    """
-    return user.groups.filter(name__in=groups).exists()
+# def check_user_permissions(user, perms=None, check_all_perms=False, groups=None):
+#     """
+#     Takes a user object, a perms list, an all_perms bool (to determine if the user should have all the perms),
+#     and an optional groups list (to check if the user is in the specified groups).
+#     Returns True if the user has the required permissions (and belongs to the specified groups if provided),
+#     otherwise returns False.
+#     """
+#     # if group is not None but the user isn't in the group(s) return False
+#     if groups and not user.groups.filter(name__in=groups).exists():
+#         return False
+#     # if
+#     if not perms:
+#         return True
+#     if check_all_perms:
+#         return user.has_perms(perms)
+#     return any(user.has_perm(perm) for perm in perms)
 
 
-def check_permissions(user, perms: list, check_all_perms: bool = False):
+def check_user_permissions(user, perms=None, check_all_perms=False, groups=None):
     """
-    Takes a user object, 
-    a perms list and an all_perms bool to determine if the user has 1 or all of the perms passed
+    Takes a user object, an optional perms list, an all_perms bool (to determine if the user should have all the perms),
+    and an optional groups list (to check if the user is in the specified groups). \n
+    Note: if both groups and perms are passed the 'or' operator is used to check if the user is either in the groups or has the perm(s) \n
+    Returns True if the user has the required permissions and belongs to the specified groups (if provided),
+    or if no permissions or groups are specified. Returns False otherwise.
     """
-    if check_all_perms:
-        return user.has_perms(perms)
-    return any(user.has_perm(perm) for perm in perms)
+    if perms and groups:
+        if check_all_perms:
+            if user.has_perms(perms) or user.groups.filter(name__in=groups).exists():
+                return True
+        else:
+            if any(user.has_perm(perm) for perm in perms) or user.groups.filter(name__in=groups).exists():
+                return True
+    elif perms:
+        if check_all_perms:
+            if user.has_perms(perms):
+                return True
+        else:
+            if any(user.has_perm(perm) for perm in perms):
+                return True
+    elif groups:
+        if user.groups.filter(name__in=groups).exists():
+            return True
+    else:
+        return True
+
+    return False
 
 
 def create_new_inv_code():
@@ -202,7 +233,7 @@ def create_new_inv_code():
     not_unique = True
     while not_unique:
         unique_code = ''.join(random.choices(
-            string.digits + string.digits + string.ascii_uppercase, k=S))
+            string.digits + string.ascii_uppercase, k=S))
         if not Invitation.objects.filter(invitation_code=unique_code):
             not_unique = False
         return unique_code
