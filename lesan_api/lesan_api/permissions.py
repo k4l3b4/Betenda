@@ -1,4 +1,3 @@
-from rest_framework.exceptions import APIException
 from rest_framework.permissions import BasePermission
 from .methods import ActionNotAllowed
 
