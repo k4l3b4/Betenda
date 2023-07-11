@@ -25,25 +25,39 @@ class Language_CUD_APIView(APIView):
             return send_response(serializer.data, "Language registered successfully", 201)
         raise PermissionDenied("You don't have permission for this action")
 
-    def patch(self, request, id, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
+
+        try:
+            id = request.data['id']
+        except:
+            raise BadRequest(
+                "Needed information was not included: resource ID")
+
         user = request.user
         groups = ['Admin']
         perms = ['Contribs.change_language']
         try:
             instance = Language.objects.get(id=id)
         except:
-            raise ResourceNotFound()
+            raise ResourceNotFound("The language was not found")
 
         if check_user_permissions(user=user, groups=groups, perms=perms):
             serializer = LanguageSerializer(instance=instance,
-                                                  data=request.data, partial=True)
+                                            data=request.data, partial=True)
             if not serializer.is_valid():
                 raise BadRequest(serializer.errors)
             serializer.save()
             return send_response(serializer.data, "Language updated successfully")
         raise PermissionDenied("You don't have permission for this action")
 
-    def delete(self, request, id, *args, **kwargs):
+    def delete(self, request, *args, **kwargs):
+
+        try:
+            id = request.data['id']
+        except:
+            raise BadRequest(
+                "Needed information was not included: resource ID")
+
         user = request.user
         groups = ['Admin']
         perms = ['Contribs.delete_language']
@@ -67,12 +81,18 @@ class Word_CUD_APIView(APIView):
         user = request.user
 
         serializer = WordSerializer(data=request.data)
-        if not serializer.is_valid(user=user):
+        if not serializer.is_valid():
             raise BadRequest(serializer.errors)
-        serializer.save()
+        serializer.save(user=user)
         return send_response(serializer.data, "Word added successfully", 201)
 
-    def patch(self, request, id, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
+        try:
+            id = request.data['id']
+        except:
+            raise BadRequest(
+                "Needed information was not included: resource ID")
+
         try:
             instance = Word.objects.get(id=id)
         except:
@@ -95,12 +115,18 @@ class Poem_CUD_APIView(APIView):
         user = request.user
 
         serializer = PoemSerializer(data=request.data)
-        if not serializer.is_valid(user=user):
+        if not serializer.is_valid():
             raise BadRequest(serializer.errors)
-        serializer.save()
+        serializer.save(user=user)
         return send_response(serializer.data, "Poem added successfully", 201)
 
-    def patch(self, request, id, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
+        try:
+            id = request.data['id']
+        except:
+            raise BadRequest(
+                "Needed information was not included: resource ID")
+
         try:
             instance = Poem.objects.get(id=id)
         except:
@@ -123,12 +149,19 @@ class SayingSerializer_CUD_APIView(APIView):
         user = request.user
 
         serializer = SayingSerializer(data=request.data)
-        if not serializer.is_valid(user=user):
+        if not serializer.is_valid():
             raise BadRequest(serializer.errors)
-        serializer.save()
+        serializer.save(user=user)
         return send_response(serializer.data, "Saying added successfully", 201)
 
-    def patch(self, request, id, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
+
+        try:
+            id = request.data['id']
+        except:
+            raise BadRequest(
+                "Needed information was not included: resource ID")
+
         try:
             instance = Saying.objects.get(id=id)
         except:
@@ -151,12 +184,19 @@ class Sentence_CUD_APIView(APIView):
         user = request.user
 
         serializer = SentenceSerializer(data=request.data)
-        if not serializer.is_valid(user=user):
+        if not serializer.is_valid():
             raise BadRequest(serializer.errors)
-        serializer.save()
+        serializer.save(user=user)
         return send_response(serializer.data, "Sentence added successfully", 201)
 
-    def patch(self, request, id, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
+
+        try:
+            id = request.data['id']
+        except:
+            raise BadRequest(
+                "Needed information was not included: resource ID")
+
         try:
             instance = Sentence.objects.get(id=id)
         except:
