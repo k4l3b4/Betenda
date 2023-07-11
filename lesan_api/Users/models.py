@@ -41,6 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class SEX(models.TextChoices):
         MALE = "MALE", "Male"
         FEMALE = "FEMALE", "Female"
+        
     email = models.EmailField(
         _("Email"), max_length=254, unique=True, default=None, blank=False, null=True)
     first_name = models.CharField(
@@ -135,9 +136,11 @@ class Device(models.Model):
         "User"), on_delete=models.CASCADE, blank=False, null=True)
     ip_address = models.CharField(
         _("Ip address"), max_length=255, blank=False, null=True)
-    device_id = models.CharField(
-        _("Device Id"), max_length=255, blank=False, null=True)
     device_type = models.CharField(
+        _("Device Type"), max_length=255, blank=False, null=True)
+    browser_type = models.CharField(
+        _("Device Type"), max_length=255, blank=False, null=True)
+    browser_version = models.CharField(
         _("Device Type"), max_length=255, blank=False, null=True)
     device_name = models.CharField(
         _("Device name"), max_length=255, blank=False, null=True)
