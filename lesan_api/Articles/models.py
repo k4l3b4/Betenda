@@ -18,3 +18,6 @@ class Article(models.Model):
         _("Published date"), auto_now=False, auto_now_add=True)
     modified_date = models.DateTimeField(
         _("modified date"), auto_now=True, auto_now_add=False)
+    
+    def __str__(self):
+        return f"{self.title[:20]}.., by {self.authors.first()}"
