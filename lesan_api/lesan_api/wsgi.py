@@ -1,5 +1,5 @@
 """
-WSGI config for guragina_api project.
+WSGI config for lesan_api project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guragina_api.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lesan_api.settings')
 
 application = get_wsgi_application()
