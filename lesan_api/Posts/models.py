@@ -6,12 +6,11 @@ class Post(models.Model):
     class TYPE(models.TextChoices):
         IMAGE = "IMAGE", "Image"
         VIDEO = "VIDEO", "Video"
-    user = models.ForeignKey(_("User"), "Users.User", on_delete=models.PROTECT)
+    user = models.ForeignKey("Users.User", verbose_name=_("User"), on_delete=models.PROTECT)
     content = models.CharField(_("Content"), max_length=280)
-    reply_to = models.ForeignKey(_("Replied to"),
-                                 'self', on_delete=models.CASCADE, null=True, blank=True)
+    parent = models.ForeignKey('self', verbose_name=_("Replied to"), related_name="post_parent", on_delete=models.CASCADE, null=True, blank=True)
     slug = models.SlugField(
-        _("Post slug"), default="", blank=False, null=False)
+        _("Slug"), default="", blank=False, null=False)
     media = models.FileField(_("Media"), upload_to='post/media/',
                              max_length=None, blank=True, null=True)
     media_type = models.CharField(
@@ -27,3 +26,7 @@ class Post(models.Model):
             # Generate slug from content, truncate to 50 characters
             self.slug = slugify(self.content)[:50]
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = _("Post")
+        verbose_name_plural = _("Posts")
