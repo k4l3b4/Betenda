@@ -36,9 +36,9 @@ class Word(models.Model):
     target_language = models.ForeignKey("Language", verbose_name=_(
         "Target language"), related_name="word_target_language", on_delete=models.PROTECT)
     synonym = models.ManyToManyField("self", verbose_name=_(
-        "Synonym"))
+        "Synonym"), blank=True)
     antonym = models.ManyToManyField("self", verbose_name=_(
-        "Antonym"))
+        "Antonym"), blank=True)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(_("Edited date"), blank=True, null=True)
 
