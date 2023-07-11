@@ -1,8 +1,8 @@
 from enum import Enum
+import random
+import string
 from django.utils import timezone
-from django.apps import apps
-from django.core.exceptions import ValidationError
-from Schools.models import School
+from Users.models import Invitation, User
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
@@ -19,15 +19,6 @@ class UnAuthenticated(APIException):
 class PermissionDenied(APIException):
     """
     User doesn't have permission to perform an action
-    """
-
-    def __init__(self, message):
-        self.detail = message
-
-
-class ActionNotAllowed(APIException):
-    """
-    User isn't within a certain group of users
     """
 
     def __init__(self, message):
@@ -111,9 +102,8 @@ def send_response(data: str | dict, msg: str, code: int = 200):
 class ErrorType(Enum):
     """
     VERSION_ERROR = When the API version in the request is not valid \n
-    PERMISSION_ERROR = When the user doesn't have permission to perform an action \n
+    PERMISSION_DENIED = When the user doesn't have permission to perform an action \n
     UNAUTHENTICATED = When the requesting client is not a user \n
-    UNAUTHORIZED = When the user isn't within a certain group of users \n
     BAD_REQUEST = When the data that is sent over is not correct \n
     METHOD_NOT_ALLOWED = When the requested data is not found \n
     NOT_FOUND = When the requested data is not found \n
@@ -126,7 +116,7 @@ class ErrorType(Enum):
     """
     When the api version in the request is not valid
     """
-    PERMISSION_ERROR = 'Permission_Error'
+    PERMISSION_DENIED = 'Permission_Denied'
     """
     When the user doesn't have permission to perform an action
     """
@@ -177,7 +167,7 @@ def send_error(err_type: ErrorType, err: str | dict, code: int = 400):
         "error": err
     }
     """
-    return Response({"err_type": err_type.value, "error": err, "timestamp": timezone.now()}, status=code)
+    return Response({"type": err_type.value, "error": err, "timestamp": timezone.now()}, status=code)
 
 
 def check_api_version(request, version, *args, **kwargs):
@@ -205,3 +195,14 @@ def check_permissions(user, perms: list, check_all_perms: bool = False):
     if check_all_perms:
         return user.has_perms(perms)
     return any(user.has_perm(perm) for perm in perms)
+
+
+def create_new_inv_code():
+    S = 8
+    not_unique = True
+    while not_unique:
+        unique_code = ''.join(random.choices(
+            string.digits + string.digits + string.ascii_uppercase, k=S))
+        if not Invitation.objects.filter(invitation_code=unique_code):
+            not_unique = False
+        return unique_code
