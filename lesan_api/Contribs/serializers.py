@@ -31,6 +31,9 @@ class WordSerializer(serializers.ModelSerializer):
             'synonym',
             'antonym',
         ]
+        extra_kwargs = {
+            'word': {'required': True},
+        }
 
     def create(self, validated_data):
         return super().create(validated_data)
