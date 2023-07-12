@@ -10,6 +10,8 @@ class Admin(admin.ModelAdmin):
     list_display = (
         "id",
         "title",
+        "status",
+        "featured",
         "published_date",
         "modified_date",
         )
