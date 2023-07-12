@@ -1,6 +1,3 @@
-# 708115538
-from random import choices
-
 from rest_framework.fields import MinLengthValidator
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers

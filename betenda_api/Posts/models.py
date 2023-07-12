@@ -6,6 +6,8 @@ class Post(models.Model):
     class TYPE(models.TextChoices):
         IMAGE = "IMAGE", "Image"
         VIDEO = "VIDEO", "Video"
+        AUDIO = "AUDIO", "Audio"
+        
     user = models.ForeignKey("Users.User", verbose_name=_("User"), on_delete=models.PROTECT)
     content = models.CharField(_("Content"), max_length=280)
     parent = models.ForeignKey('self', verbose_name=_("Replied to"), related_name="post_parent", on_delete=models.CASCADE, null=True, blank=True)

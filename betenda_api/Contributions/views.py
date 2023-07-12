@@ -8,7 +8,7 @@ from .serializers import PoemSerializer, SayingSerializer, SentenceSerializer, L
 
 
 class Language_CUD_APIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # setting level authentication class set so no need to set here
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
 
@@ -64,7 +64,7 @@ class Language_CUD_APIView(APIView):
         try:
             instance = Language.objects.get(id=id)
         except:
-            raise ResourceNotFound()
+            raise ResourceNotFound("The language was not found")
 
         if check_user_permissions(user=user, groups=groups, perms=perms):
             instance.delete()
