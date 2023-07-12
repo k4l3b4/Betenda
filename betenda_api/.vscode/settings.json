@@ -34,6 +34,7 @@
     ],
     "python.analysis.typeCheckingMode": "off",
     "cSpell.words": [
+        "Betenda",
         "glottolog"
     ],
 }
