@@ -33,4 +33,7 @@
         // ["numpy",2]
     ],
     "python.analysis.typeCheckingMode": "off",
+    "cSpell.words": [
+        "glottolog"
+    ],
 }

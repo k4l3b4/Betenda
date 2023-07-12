@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'Users.apps.UsersConfig',
-    'Contribs.apps.ContribsConfig',
+    'Contributions.apps.ContributionsConfig',
     'Posts.apps.PostsConfig',
     'HashTags.apps.HashtagsConfig',
     'Comments.apps.CommentsConfig',
@@ -191,6 +191,8 @@ EMAIL_HOST_PASSWORD = 'tufidaiirafepdhk'
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
+
+LANGUAGE_COOKIE_NAME = "lang"
 
 TIME_ZONE = 'UTC'
 

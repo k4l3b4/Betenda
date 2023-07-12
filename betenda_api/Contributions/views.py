@@ -15,7 +15,7 @@ class Language_CUD_APIView(APIView):
     def post(self, request, *args, **kwargs):
         user = request.user
         groups = ['Admin']
-        perms = ['Contribs.add_language']
+        perms = ['Contributions.add_language']
         print(user.get_all_permissions())
         if check_user_permissions(user=user, groups=groups, perms=perms):
             serializer = LanguageSerializer(data=request.data)
@@ -35,7 +35,7 @@ class Language_CUD_APIView(APIView):
 
         user = request.user
         groups = ['Admin']
-        perms = ['Contribs.change_language']
+        perms = ['Contributions.change_language']
         try:
             instance = Language.objects.get(id=id)
         except:
@@ -60,7 +60,7 @@ class Language_CUD_APIView(APIView):
 
         user = request.user
         groups = ['Admin']
-        perms = ['Contribs.delete_language']
+        perms = ['Contributions.delete_language']
         try:
             instance = Language.objects.get(id=id)
         except:
