@@ -87,6 +87,7 @@ class Word_CUD_APIView(APIView):
         return send_response(serializer.data, "Word added successfully", 201)
 
     def patch(self, request, *args, **kwargs):
+        user = request.user
         try:
             id = request.data['id']
         except:
@@ -97,6 +98,9 @@ class Word_CUD_APIView(APIView):
             instance = Word.objects.get(id=id)
         except:
             raise ResourceNotFound()
+        
+        if user.id != instance.user_id:
+            raise PermissionDenied("You are not allowed to update this word")
 
         serializer = WordSerializer(instance=instance,
                                     data=request.data, partial=True)
@@ -121,6 +125,8 @@ class Poem_CUD_APIView(APIView):
         return send_response(serializer.data, "Poem added successfully", 201)
 
     def patch(self, request, *args, **kwargs):
+        user = request.user
+
         try:
             id = request.data['id']
         except:
@@ -130,8 +136,11 @@ class Poem_CUD_APIView(APIView):
         try:
             instance = Poem.objects.get(id=id)
         except:
-            raise ResourceNotFound()
+            raise ResourceNotFound("Poem was not found")
 
+        if user.id != instance.user_id:
+            raise PermissionDenied("You are not allowed to update this word")
+        
         serializer = PoemSerializer(instance=instance,
                                     data=request.data, partial=True)
         if not serializer.is_valid():
@@ -155,7 +164,7 @@ class SayingSerializer_CUD_APIView(APIView):
         return send_response(serializer.data, "Saying added successfully", 201)
 
     def patch(self, request, *args, **kwargs):
-
+        user = request.user
         try:
             id = request.data['id']
         except:
@@ -165,7 +174,10 @@ class SayingSerializer_CUD_APIView(APIView):
         try:
             instance = Saying.objects.get(id=id)
         except:
-            raise ResourceNotFound()
+            raise ResourceNotFound("Saying was not found")
+
+        if user.id != instance.user_id:
+            raise PermissionDenied("You are not allowed to update this saying")
 
         serializer = SayingSerializer(instance=instance,
                                       data=request.data, partial=True)
@@ -190,7 +202,7 @@ class Sentence_CUD_APIView(APIView):
         return send_response(serializer.data, "Sentence added successfully", 201)
 
     def patch(self, request, *args, **kwargs):
-
+        user = request.user
         try:
             id = request.data['id']
         except:
@@ -200,7 +212,10 @@ class Sentence_CUD_APIView(APIView):
         try:
             instance = Sentence.objects.get(id=id)
         except:
-            raise ResourceNotFound()
+            raise ResourceNotFound("Sentence was not found")
+
+        if user.id != instance.user_id:
+            raise PermissionDenied("You are not allowed to update this sentence")
 
         serializer = SentenceSerializer(instance=instance,
                                         data=request.data, partial=True)

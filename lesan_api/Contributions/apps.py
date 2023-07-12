@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class ContribsConfig(AppConfig):
+class ContributionsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'Contribs'
+    name = 'Contributions'

@@ -24,10 +24,12 @@ class Admin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "translation",
         "word",
         "source_language",
         "target_language",
         "created_at",
+        "edited_at",
     )
 
 
@@ -58,6 +60,7 @@ class Admin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "translation",
         "sentence",
         "source_language",
         "target_language",

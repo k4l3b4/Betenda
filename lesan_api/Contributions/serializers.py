@@ -1,4 +1,7 @@
 # 708115538
+from random import choices
+
+from rest_framework.fields import MinLengthValidator
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 from .models import Poem, Saying, Sentence, Word, Language
@@ -22,9 +25,11 @@ class LanguageSerializer(serializers.ModelSerializer):
 
 
 class WordSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Word
         fields = [
+            'translation',
             'word',
             'source_language',
             'target_language',
@@ -32,15 +37,29 @@ class WordSerializer(serializers.ModelSerializer):
             'antonym',
         ]
         extra_kwargs = {
-            'word': {'required': True},
+            'word': {'required': True, 'validators': [MinLengthValidator(1)]},
+            'translation': {'required': True, 'validators': [MinLengthValidator(1)]},
+            'source_language': {'required': True},
+            'target_language': {'required': True},
         }
+        
+    def validate(self, data):
+        source_language = data.get('source_language')
+        target_language = data.get('target_language')
 
+        if source_language and source_language.language_type != 'SOURCE':
+            raise serializers.ValidationError({'source_language': 'Invalid source language type.'})
+
+        if target_language and target_language.language_type != 'TARGET':
+            raise serializers.ValidationError({'target_language': 'Invalid target language type.'})
+
+        return data
+    
     def create(self, validated_data):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
-
 
 class PoemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,9 +92,12 @@ class SayingSerializer(serializers.ModelSerializer):
 
 
 class SentenceSerializer(serializers.ModelSerializer):
+
+
     class Meta:
         model = Sentence
         fields = [
+            'translation',
             'sentence',
             'source_language',
             'target_language',
