@@ -2,7 +2,7 @@ from rest_framework import generics
 from rest_framework_simplejwt.views import TokenObtainPairView
 from Users.models import Device, Invitation, User
 from Users.serializers import UserCreateSerializer, UserTokenSerializer
-from lesan_api.methods import BadRequest, PermissionDenied, send_response
+from Betenda.methods import BadRequest, PermissionDenied, send_response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
