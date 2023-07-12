@@ -1,8 +1,8 @@
 from rest_framework.exceptions import MethodNotAllowed, NotAuthenticated
-from lesan_api.methods import BadRequest, ErrorType, PaymentRequired, PermissionDenied, ResourceNotFound, ServerError, UnAuthenticated, UselessRequest, VersionError, send_error
+from .methods import BadRequest, ErrorType, PaymentRequired, PermissionDenied, ResourceNotFound, ServerError, UnAuthenticated, UselessRequest, VersionError, send_error
 from rest_framework.views import exception_handler
 
-def lesan_exception_handler(exc:str | dict, context):
+def betenda_exception_handler(exc:str | dict, context):
     if isinstance(exc, PermissionDenied):
         return send_error(err_type=ErrorType.PERMISSION_DENIED, err=exc.detail, code=403)
     elif isinstance(exc, UnAuthenticated):
