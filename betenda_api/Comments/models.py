@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 # Create your models here.
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     user = models.ForeignKey(
         "Users.User", verbose_name=_("User"), on_delete=models.CASCADE)
     comment = models.TextField(_("Comment"), blank=False, null=True)
