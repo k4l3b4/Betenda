@@ -67,6 +67,9 @@ INSTALLED_APPS = [
     'Reactions.apps.ReactionsConfig',
     'Articles.apps.ArticlesConfig',
     'MileStones.apps.MilestonesConfig',
+    'Donations.apps.DonationsConfig',
+    'Reports.apps.ReportsConfig',
+    'RoadMaps.apps.RoadmapsConfig',
     'django_user_agents',
 ]
 
