@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from .models import Comments
+from .models import Comment
 
 # Register your models here.
 
 
-@admin.register(Comments)
+@admin.register(Comment)
 class Admin(admin.ModelAdmin):
     list_display = (
         "id",
