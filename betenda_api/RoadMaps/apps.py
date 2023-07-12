@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class RoadmapConfig(AppConfig):
+class RoadmapsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'RoadMap'
+    name = 'RoadMaps'
