@@ -2,7 +2,7 @@
 # from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from lesan_api.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response
+from Betenda.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response
 from .models import Poem, Saying, Sentence, Language, Word
 from .serializers import PoemSerializer, SayingSerializer, SentenceSerializer, LanguageSerializer, WordSerializer
 
@@ -149,7 +149,7 @@ class Poem_CUD_APIView(APIView):
         return send_response(serializer.data, "Poem updated successfully")
 
 
-class SayingSerializer_CUD_APIView(APIView):
+class Saying_CUD_APIView(APIView):
     # setting level authentication class set so no need to set here
     queryset = Saying.objects.all()
     serializer_class = SayingSerializer
