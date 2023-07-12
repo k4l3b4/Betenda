@@ -18,12 +18,10 @@ class Admin(admin.ModelAdmin):
     )
 
 
-
 @admin.register(Word)
 class Admin(admin.ModelAdmin):
     list_display = (
         "id",
-        "user",
         "translation",
         "word",
         "source_language",
@@ -37,7 +35,7 @@ class Admin(admin.ModelAdmin):
 class Admin(admin.ModelAdmin):
     list_display = (
         "id",
-        "user",
+        "poem",
         "language",
         "created_at",
         "edited_at",
@@ -48,7 +46,7 @@ class Admin(admin.ModelAdmin):
 class Admin(admin.ModelAdmin):
     list_display = (
         "id",
-        "user",
+        "saying",
         "language",
         "created_at",
         "edited_at",
@@ -59,10 +57,10 @@ class Admin(admin.ModelAdmin):
 class Admin(admin.ModelAdmin):
     list_display = (
         "id",
-        "user",
         "translation",
         "sentence",
         "source_language",
         "target_language",
         "created_at",
+        "edited_at",
     )
