@@ -1,3 +1,4 @@
+from enum import unique
 from django.db import models
 from django.utils.translation import gettext as _
 # Create your models here.
@@ -58,9 +59,11 @@ class Poem(models.Model):
     user = models.ForeignKey("Users.User", verbose_name=_(
         "User"), on_delete=models.SET_NULL, blank=False, null=True)
     title = models.CharField(
-        _("Title"), max_length=255, blank=False, null=True)
+        _("Title"), max_length=255, blank=False)
     slug = models.SlugField(_("Slug"), max_length=255, blank=False, null=True)
-    poem = models.TextField(_("Poem"), blank=False, null=True)
+    poem = models.TextField(_("Poem"), blank=False, unique=True, error_messages={
+        "unique": "This poem has already been submitted."
+    })
     language = models.ForeignKey("Language", related_name="poem_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
@@ -78,7 +81,9 @@ class Poem(models.Model):
 class Saying(models.Model):
     user = models.ForeignKey("Users.User", verbose_name=_(
         "User"), on_delete=models.SET_NULL, blank=False, null=True)
-    saying = models.TextField(_("Saying"), blank=False, null=True)
+    saying = models.TextField(_("Saying"), blank=False, unique=True, error_messages={
+        "unique": "This saying has already been submitted."
+    })
     language = models.ForeignKey("Language", related_name="saying_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
@@ -96,8 +101,8 @@ class Saying(models.Model):
 class Sentence(models.Model):
     user = models.ForeignKey("Users.User", verbose_name=_(
         "User"), on_delete=models.SET_NULL, blank=False, null=True)
-    sentence = models.TextField(_("Sentence"), blank=False, null=True)
-    translation = models.TextField(_("Translated to"), blank=False, null=True)
+    sentence = models.TextField(_("Sentence"), blank=False)
+    translation = models.TextField(_("Translated to"), blank=False)
 
     source_language = models.ForeignKey("Language", related_name="sentence_source_language", verbose_name=_(
         "Source language"), on_delete=models.PROTECT)
