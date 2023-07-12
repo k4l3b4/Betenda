@@ -1,4 +1,4 @@
-from lesan_api.methods import BadRequest, UnAuthenticated, send_response
+from Betenda.methods import BadRequest, UnAuthenticated
 from rest_framework.authentication import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User
