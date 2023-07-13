@@ -2,7 +2,7 @@
 # from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from Betenda.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response
+from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response
 from .models import Poem, Saying, Sentence, Language, Word
 from .serializers import PoemSerializer, SayingSerializer, SentenceSerializer, LanguageSerializer, WordSerializer
 
@@ -139,7 +139,7 @@ class Poem_CUD_APIView(APIView):
             raise ResourceNotFound("Poem was not found")
 
         if user.id != instance.user_id:
-            raise PermissionDenied("You are not allowed to update this word")
+            raise PermissionDenied("You are not allowed to update this poem")
         
         serializer = PoemSerializer(instance=instance,
                                     data=request.data, partial=True)

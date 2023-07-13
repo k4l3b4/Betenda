@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework_simplejwt.views import TokenObtainPairView
-from Users.models import Device, Invitation, User
-from Users.serializers import UserCreateSerializer, UserTokenSerializer
-from Betenda.methods import BadRequest, PermissionDenied, send_response
+from Users.models import Device, Invitation
+from Users.serializers import User_CUD_Serializer, UserTokenSerializer
+from betenda_api.methods import BadRequest, PermissionDenied, send_response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 
 class UserCreateView(generics.CreateAPIView):
     permission_classes = [AllowAny]
-    serializer_class = UserCreateSerializer
+    serializer_class = User_CUD_Serializer
 
     def post(self, request, code, format=None):
         try:
@@ -19,7 +19,7 @@ class UserCreateView(generics.CreateAPIView):
         except:
             raise PermissionDenied("You are not authorized to register an account")
 
-        serializer = UserCreateSerializer(request.data)
+        serializer = User_CUD_Serializer(request.data)
 
         # Just in case the invitation instance wasn't deleted for some reason
         if invite.count < 11:
