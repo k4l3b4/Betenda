@@ -1,4 +1,4 @@
-from Betenda.methods import BadRequest, UnAuthenticated
+from betenda_api.methods import BadRequest, UnAuthenticated
 from rest_framework.authentication import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User
@@ -12,7 +12,7 @@ def validate_terms(value):
             "You have to agree with the terms of service")
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class User_CUD_Serializer(serializers.ModelSerializer):
     user_name = serializers.CharField(validators=[UnicodeUsernameValidator()])
     terms = serializers.BooleanField(validators=[validate_terms])
 
