@@ -43,6 +43,7 @@ class Word(models.Model):
         "Synonym"), blank=True)
     antonym = models.ManyToManyField("self", verbose_name=_(
         "Antonym"), blank=True)
+    adult = models.BooleanField(_("18+ word"), default=False)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(
         _("Edited date"), blank=True, null=True, auto_now=True, auto_now_add=False)
@@ -66,6 +67,7 @@ class Poem(models.Model):
     })
     language = models.ForeignKey("Language", related_name="poem_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
+    adult = models.BooleanField(_("18+ poem"), default=False)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(
         _("Edited date"), blank=True, null=True, auto_now=True, auto_now_add=False)
@@ -86,6 +88,7 @@ class Saying(models.Model):
     })
     language = models.ForeignKey("Language", related_name="saying_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
+    adult = models.BooleanField(_("18+ saying"), default=False)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(
         _("Edited date"), blank=True, null=True, auto_now=True, auto_now_add=False)
@@ -108,6 +111,7 @@ class Sentence(models.Model):
         "Source language"), on_delete=models.PROTECT)
     target_language = models.ForeignKey("Language", related_name="sentence_target_language", verbose_name=_(
         "Target language"), on_delete=models.PROTECT)
+    adult = models.BooleanField(_("18+ sentence"), default=False)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(
         _("Edited date"), blank=True, null=True, auto_now=True, auto_now_add=False)
