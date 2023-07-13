@@ -8,7 +8,7 @@ class Post(models.Model):
         VIDEO = "VIDEO", "Video"
         AUDIO = "AUDIO", "Audio"
         
-    user = models.ForeignKey("Users.User", verbose_name=_("User"), on_delete=models.PROTECT)
+    user = models.ForeignKey("Users.User", verbose_name=_("User"), on_delete=models.PROTECT, blank=True, null=True)
     content = models.CharField(_("Content"), max_length=280)
     parent = models.ForeignKey('self', verbose_name=_("Replied to"), related_name="post_parent", on_delete=models.CASCADE, null=True, blank=True)
     slug = models.SlugField(
@@ -18,10 +18,10 @@ class Post(models.Model):
     media_type = models.CharField(
         _("Media type"), max_length=20, choices=TYPE.choices, null=True, blank=True)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
-    edited_at = models.DateTimeField(_("Edited date"), blank=True, null=True)
+    edited_at = models.DateTimeField(_("Edited date"), blank=True, null=True, auto_now=True)
 
     def __str__(self):
-        return f"{self.user.username}: {self.content}"
+        return f"{self.user.user_name}: {self.content}"
 
     def save(self, *args, **kwargs):
         if not self.slug:
