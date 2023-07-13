@@ -28,13 +28,14 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 ALLOWED_HOSTS = [".betenda.app", '127.0.0.1']
 
+DEBUG = True
+
 AUTH_USER_MODEL = 'Users.User'
 
-DEBUG = True
 
 CSRF_COOKIE_HTTPONLY = True
 
-CSRF_COOKIE_NAME = "ls_csrf"
+CSRF_COOKIE_NAME = "bt_csrf"
 
 CSRF_COOKIE_SECURE = True
 
@@ -211,7 +212,9 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
