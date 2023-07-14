@@ -26,6 +26,7 @@ class Admin(admin.ModelAdmin):
         "user",
         "invitation_code",
         "disabled",
+        "expired",
         "count",
     )
 
