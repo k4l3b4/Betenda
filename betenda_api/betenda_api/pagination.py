@@ -1,3 +1,5 @@
+from betenda_api.methods import BadRequest
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 import math
@@ -33,11 +35,21 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 200
 
+    def paginate_queryset(self, queryset, request, view=None):
+        """
+        Override the paginate_queryset method to handle invalid pages.
+        """
+        try:
+            return super().paginate_queryset(queryset, request, view)
+        except NotFound:
+            raise BadRequest("The page was not found")
+
     def get_paginated_response(self, data):
         return Response({
-            'total': self.page.paginator.count,
-            'pages_count': math.ceil(self.page.paginator.count/int(self.request.GET.get('page_size', self.page_size))),
-            'page': int(self.request.GET.get('page', DEFAULT_STANDARD_PAGE)),
+            'total_items': self.page.paginator.count,
+            'pages_count': math.ceil(self.page.paginator.count / int(self.request.GET.get('page_size', self.page_size))),
+            'page': int(self.request.GET.get('page', self.page.paginator.num_pages)),
             'page_size': int(self.request.GET.get('page_size', self.page_size)),
             'results': data
         })
+    
