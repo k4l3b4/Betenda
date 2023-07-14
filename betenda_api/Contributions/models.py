@@ -1,6 +1,6 @@
-from enum import unique
 from django.db import models
 from django.utils.translation import gettext as _
+from django.contrib.contenttypes.fields import GenericRelation
 # Create your models here.
 
 
@@ -68,6 +68,8 @@ class Poem(models.Model):
     language = models.ForeignKey("Language", related_name="poem_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     adult = models.BooleanField(_("18+ poem"), default=False)
+    reactions = GenericRelation("Reactions.Reaction")
+    comments = GenericRelation("Comments.Comment")
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(
         _("Edited date"), blank=True, null=True, auto_now=True, auto_now_add=False)
@@ -89,6 +91,8 @@ class Saying(models.Model):
     language = models.ForeignKey("Language", related_name="saying_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     adult = models.BooleanField(_("18+ saying"), default=False)
+    reactions = GenericRelation("Reactions.Reaction")
+    comments = GenericRelation("Comments.Comment")
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(
         _("Edited date"), blank=True, null=True, auto_now=True, auto_now_add=False)
