@@ -226,3 +226,11 @@ def check_user_permissions(user, perms=None, check_all_perms=False, groups=None)
         return True
 
     return False
+
+
+def validate_key_value(data=None, name: str | None = None, raise_exception=True):
+    if data and data != "":
+        return True
+    if raise_exception:
+        raise BadRequest(f"Needed information was not included: {name}")
+    return False
