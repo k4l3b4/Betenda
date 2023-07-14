@@ -226,14 +226,3 @@ def check_user_permissions(user, perms=None, check_all_perms=False, groups=None)
         return True
 
     return False
-
-
-def create_new_inv_code():
-    S = 8
-    not_unique = True
-    while not_unique:
-        unique_code = ''.join(random.choices(
-            string.digits + string.ascii_uppercase, k=S))
-        if not Invitation.objects.filter(invitation_code=unique_code):
-            not_unique = False
-        return unique_code
