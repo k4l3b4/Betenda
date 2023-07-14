@@ -1,10 +1,12 @@
-import uuid
+import random
+import string
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         Group, PermissionsMixin)
 from Users.fields import IntegerRangeField
+from django_extensions.db.fields import RandomCharField
 # Create your models here.
 
 
@@ -34,6 +36,19 @@ class CustomAccountManager(BaseUserManager):
         return user
 
 
+class Avatar(models.Model):
+    class TYPE(models.TextChoices):
+        IMAGE = "IMAGE", "Image"
+        VIDEO = "VIDEO", "Video"
+
+    media = models.FileField(
+        _("Profile media"), upload_to='user/Users/profile', max_length=None, blank=True, null=True)
+    type = models.CharField(
+        _("Media type"), choices=TYPE.choices, max_length=255)
+    posted_at = models.DateTimeField(
+        _("Posted date"), auto_now=False, auto_now_add=True)
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     '''
     The default User model
@@ -41,22 +56,24 @@ class User(AbstractBaseUser, PermissionsMixin):
     class SEX(models.TextChoices):
         MALE = "MALE", "Male"
         FEMALE = "FEMALE", "Female"
-        
+
     email = models.EmailField(
         _("Email"), max_length=254, unique=True, default=None, blank=False, null=True)
     first_name = models.CharField(
-        _("First name"), max_length=150, blank=False, null=True)
+        _("First name"), max_length=150, blank=False)
     last_name = models.CharField(
         _("Last name"), max_length=150, blank=False, null=True)
     user_name = models.CharField(
-        _("User name"), max_length=50, blank=False, null=True)
+        _("User name"), max_length=50, blank=False)
     bio = models.CharField(_("Bio"), max_length=255, blank=False, null=True)
     sex = models.CharField(
         _("Sex"), max_length=50, choices=SEX.choices, default=None, blank=True, null=True)
     profile_avatar = models.ImageField(
-        _("Profile photo"), upload_to='user/Users/profile_pic', max_length=None, blank=False, null=True)
+        _("Profile photo"), upload_to='user/profile', max_length=None, blank=True, null=True)
     birth_date = models.DateField(
-        _("Birth day"), auto_now=False, auto_now_add=False, null=True)
+        _("Birth day"), auto_now=False, auto_now_add=False, blank=True, null=True)
+    invited_by = models.ForeignKey('self', verbose_name=_(
+        "Invited by"), on_delete=models.SET_NULL, null=True, blank=True)
     phone_number = models.CharField(
         _("phone number"), max_length=13, blank=True, null=True)
     has_rated = models.BooleanField(_("Has rated the app"), default=False)
@@ -87,17 +104,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _("Users")
 
 
+    def save(self, *args, **kwargs):
+        is_new_instance = not self.pk
+        super().save(*args, **kwargs)
+        if is_new_instance:
+            Invitation.objects.create(user=self)
+
+
 class Invitation(models.Model):
     '''
     A users invitation code fields: user, invitation_code, count
     '''
     user = models.ForeignKey("User", verbose_name=_(
         "User"), on_delete=models.CASCADE)
-    invitation_code = models.CharField(
-        _("Invitation code"), max_length=10, blank=True, null=True)
-    count = models.PositiveIntegerField(
-        _("Invited users count"), blank=True, null=False)
+    invitation_code = RandomCharField(
+        _("Invitation code"), length=15, unique=True, blank=True, null=True)
+    count = models.IntegerField(
+        _("Invited users count"), default=0, blank=True, null=True)
     disabled = models.BooleanField(_("Disabled"), default=False)
+    expired = models.BooleanField(_("Expired"), default=False)
 
     class Meta:
         verbose_name = _("Invitation code")
