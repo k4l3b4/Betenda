@@ -1,17 +1,29 @@
 from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response
 from rest_framework.views import APIView
 from Articles.models import Article
-from Articles.serializers import ArticleSerializer
+from Articles.serializers import ArticleGetSerializer, ArticleSerializer
 from betenda_api.pagination import StandardResultsSetPagination
 from rest_framework import generics
 
+
 # Create your views here.
-
-
 class Article_List_View(generics.ListAPIView):
     queryset = Article.objects.filter(status="PUBLISHED")
     serializer_class = ArticleSerializer
     pagination_class = StandardResultsSetPagination
+
+
+class Article_Get_View(generics.RetrieveAPIView):
+    queryset = Article.objects.filter(status="PUBLISHED")
+    serializer_class = ArticleGetSerializer
+
+    def get(self, request, slug, *args, **kwargs):
+        try:
+            article = self.queryset.get(slug=slug)
+        except:
+            raise ResourceNotFound("The article was not found")
+        serializer = ArticleGetSerializer(article)
+        return send_response(serializer.data, "Article retrieved successfully")
 
 
 class Article_CUD_View(APIView):
@@ -27,7 +39,8 @@ class Article_CUD_View(APIView):
         data = request.data.copy()
         authors = data.get('authors', None)
         if authors:
-            authors_list = [user_id] + [author.strip() for author in authors.split(',')]
+            authors_list = [user_id] + [author.strip()
+                                        for author in authors.split(',')]
         else:
             authors_list = None
         groups = ['Admin']
@@ -56,7 +69,8 @@ class Article_CUD_View(APIView):
         data = request.data.copy()
         authors = request.data.get('authors', None)
         if authors:
-            authors_list = [user_id] + [author.strip() for author in authors.split(',')]
+            authors_list = [user_id] + [author.strip()
+                                        for author in authors.split(',')]
         else:
             authors_list = None
         groups = ['Admin']
@@ -70,14 +84,11 @@ class Article_CUD_View(APIView):
             "featured": data.get('featured', None),
             "authors": authors_list,
         }
-        print(passable_data)
-        print("________________\n__________________")
         passable_data = {
             key: value
             for key, value in passable_data.items()
             if value is not None
         }
-        print(passable_data)
         try:
             id = request.data['id']
         except:
@@ -109,13 +120,12 @@ class Article_CUD_View(APIView):
         except:
             raise BadRequest(
                 "Needed information was not included: resource ID")
-
         try:
             instance = Article.objects.get(id=id)
         except:
             raise ResourceNotFound("Article was not found")
         # check if the user is the main author or is Admin/has permission to delete articles
-        if user.id == instance.authors.first().id or check_user_permissions(user=user, groups=groups, perms=perms):
+        if instance.authors.first() and user.id == instance.authors.first().id or check_user_permissions(user=user, groups=groups, perms=perms):
             instance.delete()
-            return send_response(None, "Language deleted successfully")
+            return send_response(None, "Article deleted successfully")
         raise PermissionDenied("You don't have permission for this action")
