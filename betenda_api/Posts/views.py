@@ -1,15 +1,22 @@
+from betenda_api.pagination import StandardResultsSetPagination
+from rest_framework import generics
 from rest_framework.views import APIView
-
 from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, send_response
 from .models import Post
 from .serializers import Post_CUD_Serializer
+
+
+class Post_List_View(generics.ListAPIView):
+    queryset = Post.objects.filter(parent=None)
+    serializer_class = Post_CUD_Serializer
+    pagination_class = StandardResultsSetPagination
 
 
 class Post_CUD_View(APIView):
     '''
     Post create, update, delete view
     '''
-    query_set = Post.objects.all()
+    queryset = Post.objects.all()
     serializer_class = Post_CUD_Serializer
 
     def post(self, request, *args, **kwargs):
