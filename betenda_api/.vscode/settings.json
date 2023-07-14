@@ -11,10 +11,10 @@
     },
     "python.formatting.provider": "none",
     "python.autoComplete.extraPaths": [
-        "F:/Projects/lesan/lesan_api/lesan_env/Lib/site-packages"
+        "F:/Projects/betenda/betenda_api/bet_env/Lib/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "F:/Projects/lesan/lesan_api/lesan_env/Lib/site-packages"
+        "F:/Projects/betenda/betenda_api/bet_env/Lib/site-packages"
     ],
     "python.analysis.packageIndexDepths": [
         {
@@ -27,7 +27,7 @@
         // ["scipy", 2],
         {
             "name": "django",
-            "depth": 2,
+            "depth": 3,
             "includeAllSymbols": true
         },
         // ["numpy",2]
@@ -35,6 +35,8 @@
     "python.analysis.typeCheckingMode": "off",
     "cSpell.words": [
         "Betenda",
-        "glottolog"
+        "glottolog",
+        "LRCUD",
+        "Roadmaps"
     ],
 }
