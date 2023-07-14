@@ -1,10 +1,9 @@
 import re
 from django.db import models
 from django.utils.translation import gettext as _
-from django.utils.text import slugify
-
 from HashTags.models import HashTag
-
+from django_extensions.db.fields import AutoSlugField
+from django.contrib.contenttypes.fields import GenericRelation
 # Create your models here.
 
 
@@ -16,8 +15,7 @@ class Article(models.Model):
 
     title = models.CharField(
         _("Article title"), max_length=255, blank=False, null=True)
-    slug = models.SlugField(
-        _("Article slug"), default="", blank=False, null=False)
+    slug = AutoSlugField(_("Slug"), populate_from=['title'])
     desc = models.CharField(_("Article description"),
                             max_length=255, blank=False, null=True)
     body = models.TextField(_("Article body"), blank=False, null=True)
@@ -32,15 +30,12 @@ class Article(models.Model):
         _("Published date"), auto_now=False, auto_now_add=True)
     modified_date = models.DateTimeField(
         _("modified date"), auto_now=True, auto_now_add=False)
-
+    reactions = GenericRelation("Reactions.Reaction")
+    comments = GenericRelation("Comments.Comment")
     def __str__(self):
         return f"{self.title[:20]}.., by {self.authors.first()}"
 
     def save(self, *args, **kwargs):
-        # Generate slug from title, truncate to 50 characters on create only
-        if not self.slug:
-            self.slug = slugify(self.title)[:50]
-
         super().save(*args, **kwargs)
         # Run the async function
         self.process_hashtags()
