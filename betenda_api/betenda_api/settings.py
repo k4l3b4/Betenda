@@ -47,6 +47,8 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 
+APPEND_SLASH = False
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -72,6 +74,7 @@ INSTALLED_APPS = [
     'Reports.apps.ReportsConfig',
     'RoadMaps.apps.RoadmapsConfig',
     'django_user_agents',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -213,7 +216,6 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 
 
 # Default primary key field type
