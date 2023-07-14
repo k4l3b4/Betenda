@@ -16,7 +16,6 @@ class Language_CUD_APIView(APIView):
         user = request.user
         groups = ['Admin']
         perms = ['Contributions.add_language']
-        print(user.get_all_permissions())
         if check_user_permissions(user=user, groups=groups, perms=perms):
             serializer = LanguageSerializer(data=request.data)
             if not serializer.is_valid():
