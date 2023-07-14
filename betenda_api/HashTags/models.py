@@ -7,13 +7,29 @@ class HashTag(models.Model):
     HashTag model to be used in posts and articles
     '''
     tag = models.CharField(_("tag"), max_length=255, blank=False, null=True)
+    users = models.ManyToManyField("Users.User", through='UserHashtag')
     created_date = models.DateTimeField(
         _("Created date"), auto_now=False, auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.tag}"
+    
     class Meta:
         verbose_name = _("HashTag")
         verbose_name_plural = _("HashTags")
 
+
+class UserHashtag(models.Model):
+    '''
+    Tags a user has subscribed to
+    '''
+    user = models.ForeignKey("Users.User", on_delete=models.CASCADE)
+    hashtag = models.ForeignKey(HashTag, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.user_name}: {self.hashtag} {self.score}"
 
 class Engagement(models.Model):
     '''
@@ -26,6 +42,9 @@ class Engagement(models.Model):
     duration = models.DurationField(_("Duration"), blank=True, null=True)
     int_amount = models.PositiveIntegerField(
         _("Interaction amount"), default=0, blank=False, null=True)
+    
+    def __str__(self):
+        return f"{self.tag}: {self.int_amount} {self.date}"
 
     class Meta:
         verbose_name = _("Engagement statistic")
