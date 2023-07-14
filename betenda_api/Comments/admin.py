@@ -12,4 +12,5 @@ class Admin(admin.ModelAdmin):
         "user",
         "comment",
         "created_at",
+        "updated_at",
         )
