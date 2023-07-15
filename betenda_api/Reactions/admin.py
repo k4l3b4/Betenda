@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Reaction
+from .models import Reaction, ReactionCount
 
 # Register your models here.
 
@@ -12,4 +12,14 @@ class Admin(admin.ModelAdmin):
         "user",
         "reaction",
         "created_at",
+        )
+    
+@admin.register(ReactionCount)
+class Admin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "reaction",
+        "count",
+        "object_id",
+        "content_type",
         )
