@@ -1,10 +1,15 @@
 from enum import Enum
-import random
-import string
 from django.utils import timezone
-from Users.models import Invitation, User
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+from Notifications.models import Notification
+from Reactions.models import Reaction, ReactionCount
+from django.contrib.contenttypes.models import ContentType
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+import json
+
+channel_layer = get_channel_layer()
 
 
 class UnAuthenticated(APIException):
@@ -179,24 +184,6 @@ def check_api_version(request, version, *args, **kwargs):
         return True
 
 
-# def check_user_permissions(user, perms=None, check_all_perms=False, groups=None):
-#     """
-#     Takes a user object, a perms list, an all_perms bool (to determine if the user should have all the perms),
-#     and an optional groups list (to check if the user is in the specified groups).
-#     Returns True if the user has the required permissions (and belongs to the specified groups if provided),
-#     otherwise returns False.
-#     """
-#     # if group is not None but the user isn't in the group(s) return False
-#     if groups and not user.groups.filter(name__in=groups).exists():
-#         return False
-#     # if
-#     if not perms:
-#         return True
-#     if check_all_perms:
-#         return user.has_perms(perms)
-#     return any(user.has_perm(perm) for perm in perms)
-
-
 def check_user_permissions(user, perms=None, check_all_perms=False, groups=None):
     """
     Takes a user object, an optional perms list, an all_perms bool (to determine if the user should have all the perms),
@@ -229,8 +216,60 @@ def check_user_permissions(user, perms=None, check_all_perms=False, groups=None)
 
 
 def validate_key_value(data=None, name: str | None = None, raise_exception=True):
+    '''
+    Takes in a key value pair object and returns True if the key is present and the value is not empty \n
+    else if the raise_exception is True(default) it will raise a BadRequest exception with the {name} attr
+    else it will return False
+    '''
     if data and data != "":
         return True
     if raise_exception:
         raise BadRequest(f"Needed information was not included: {name}")
     return False
+
+
+def get_reactions(self, obj):
+    '''
+    takes in context and obj to retrieve reactions for the specific objects
+    '''
+    requesting_user = self.context['request'].user
+    content_type = ContentType.objects.get_for_model(obj)
+
+    reactions = ReactionCount.objects.filter(
+        content_type=content_type, object_id=obj.id)
+
+    user_reaction = None
+
+    try:
+        reaction_user = Reaction.objects.get(
+            content_type=content_type, object_id=obj.id, user=requesting_user)
+        user_reaction = reaction_user.reaction
+    except:
+        user_reaction = None
+
+    return {
+        'user_reacted_with': user_reaction,
+        'reaction_count': [
+            {'reaction': item.reaction, 'count': item.count}
+            for item in reactions
+        ]
+    }
+
+
+def save_notification(user, message):
+    '''
+    save a notification
+    '''
+    notification = Notification.objects.create(user=user, message=message)
+    # Implement logic to send the notification via email, push notification, etc.
+    # For simplicity, we are only creating and returning the notification here
+    return notification
+
+
+def send_notification(user_id, object, type="notify"):
+    '''
+    Send a realtime notification message to the specific user's channel group
+    for now this will only handle notifications from the Notifications instance
+    '''
+    async_to_sync(channel_layer.group_send)(
+        str(user_id), {"type": type, "object": object})
