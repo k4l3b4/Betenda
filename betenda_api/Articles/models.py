@@ -6,7 +6,6 @@ from django_extensions.db.fields import AutoSlugField
 from django.contrib.contenttypes.fields import GenericRelation
 # Create your models here.
 
-
 class Article(models.Model):
     STATUS = (
         ('DRAFT', 'Draft'),
@@ -14,15 +13,15 @@ class Article(models.Model):
     )
 
     title = models.CharField(
-        _("Article title"), max_length=255, blank=False, null=True)
+        _("Article title"), max_length=255, blank=False, db_index=True)
     slug = AutoSlugField(_("Slug"), populate_from=['title'])
     desc = models.CharField(_("Article description"),
-                            max_length=255, blank=False, null=True)
-    body = models.TextField(_("Article body"), blank=False, null=True)
+                            max_length=255, blank=False, db_index=True)
+    body = models.TextField(_("Article body"), blank=False)
     image = models.ImageField(
         _("Article image"), upload_to='article/images/', max_length=None, blank=True, null=True)
     hashtags = models.ManyToManyField(
-        "HashTags.HashTag", blank=True)
+        "HashTags.HashTag", blank=True, db_index=True)
     authors = models.ManyToManyField("Users.User", verbose_name=_("Authors"))
     status = models.CharField(_("Status"), choices=STATUS, max_length=255)
     featured = models.BooleanField(_("Featured"), default=False)
@@ -32,6 +31,7 @@ class Article(models.Model):
         _("modified date"), auto_now=True, auto_now_add=False)
     reactions = GenericRelation("Reactions.Reaction")
     comments = GenericRelation("Comments.Comment")
+
     def __str__(self):
         return f"{self.title[:20]}.., by {self.authors.first()}"
 
