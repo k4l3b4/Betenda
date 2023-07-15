@@ -1,9 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext as _
 from django.contrib.contenttypes.fields import GenericRelation
+
+
 # Create your models here.
-
-
 class Language(models.Model):
     class LANGUAGE_TYPES(models.TextChoices):
         SOURCE = "SOURCE", "Source"
@@ -60,11 +60,12 @@ class Poem(models.Model):
     user = models.ForeignKey("Users.User", verbose_name=_(
         "User"), on_delete=models.SET_NULL, blank=False, null=True)
     title = models.CharField(
-        _("Title"), max_length=255, blank=False)
+        _("Title"), max_length=255, blank=False, db_index=True)
     slug = models.SlugField(_("Slug"), max_length=255, blank=False, null=True)
     poem = models.TextField(_("Poem"), blank=False, unique=True, error_messages={
         "unique": "This poem has already been submitted."
-    })
+    }, db_index=True)
+    recording = models.FileField(_("Poem recording"), upload_to=None, max_length=100)
     language = models.ForeignKey("Language", related_name="poem_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     adult = models.BooleanField(_("18+ poem"), default=False)
@@ -87,7 +88,7 @@ class Saying(models.Model):
         "User"), on_delete=models.SET_NULL, blank=False, null=True)
     saying = models.TextField(_("Saying"), blank=False, unique=True, error_messages={
         "unique": "This saying has already been submitted."
-    })
+    }, db_index=True)
     language = models.ForeignKey("Language", related_name="saying_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     adult = models.BooleanField(_("18+ saying"), default=False)
