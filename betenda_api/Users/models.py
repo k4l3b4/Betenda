@@ -76,6 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Invited by"), on_delete=models.SET_NULL, null=True, blank=True)
     phone_number = models.CharField(
         _("phone number"), max_length=13, blank=True, null=True)
+    verified = models.BooleanField(default=False)
     has_rated = models.BooleanField(_("Has rated the app"), default=False)
     terms = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
@@ -103,7 +104,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = _("User")
         verbose_name_plural = _("Users")
 
-
     def save(self, *args, **kwargs):
         is_new_instance = not self.pk
         super().save(*args, **kwargs)
@@ -111,12 +111,62 @@ class User(AbstractBaseUser, PermissionsMixin):
             Invitation.objects.create(user=self)
 
 
+class UserProfile(models.Model):
+    '''
+    Model to handle Follower, Following and Friends
+    '''
+    user = models.OneToOneField(
+        "User", verbose_name=_("User"), on_delete=models.CASCADE)
+    followers = models.ManyToManyField(
+        "User", through='FollowerRequest', related_name="followers", verbose_name=_("User"))
+    following = models.ManyToManyField(
+        "User", related_name="following", verbose_name=_("User"))
+    # needed to get the count instead of counting followers and following on each request
+    followers_count = models.PositiveIntegerField(
+        _("Followers count"), default=0)
+    following_count = models.PositiveIntegerField(
+        _("Following count"), default=0)
+    is_private = models.BooleanField(_("Private account"), default=False)
+
+    def __str__(self):
+        return f"{self.user.user_name} Followers: {self.followers_count}, Following: {self.following_count}"
+
+    class Meta:
+        verbose_name = _("Friends")
+        verbose_name_plural = _("Friends")
+
+    def is_followed_by(self, user):
+        """
+        Check if the given user is being followed by the requesting user.
+        """
+        return self.followers.filter(id=user.id).exists()
+
+    def is_following(self, user):
+        """
+        Check if the requesting user is following the given user.
+        """
+        return self.following.filter(id=user.id).exists()
+
+
+class FollowerRequest(models.Model):
+    user_profile = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, verbose_name=_("User profile"), db_index=True)
+    follower = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name=_("Follower"), db_index=True)
+    is_approved = models.BooleanField(_("Approved"), default=False)
+    requested_at = models.DateTimeField(_("Requested at"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Follower Request")
+        verbose_name_plural = _("Follower Requests")
+
+
 class Invitation(models.Model):
     '''
     A users invitation code fields: user, invitation_code, count
     '''
     user = models.ForeignKey("User", verbose_name=_(
-        "User"), on_delete=models.CASCADE)
+        "User"), on_delete=models.CASCADE, db_index=True)
     invitation_code = RandomCharField(
         _("Invitation code"), length=15, unique=True, blank=True, null=True)
     count = models.IntegerField(
