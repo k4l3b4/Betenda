@@ -9,7 +9,7 @@ from betenda_api.methods import BadRequest, ResourceNotFound, send_response, val
 from django.contrib.contenttypes.models import ContentType
 
 
-class Reaction_Create_View(APIView):
+class Reaction_CREATE_View(APIView):
     serializer_class = ReactionSerializer
 
     def post(self, request):
