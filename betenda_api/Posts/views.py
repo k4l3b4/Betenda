@@ -1,12 +1,15 @@
 from betenda_api.pagination import StandardResultsSetPagination
 from rest_framework import generics
 from rest_framework.views import APIView
-from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, send_response
+from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, send_response, validate_key_value
 from .models import Post
 from .serializers import Post_CUD_Serializer
 
 
 class Post_List_View(generics.ListAPIView):
+    '''
+    Post list view
+    '''
     queryset = Post.objects.filter(parent=None)
     serializer_class = Post_CUD_Serializer
     pagination_class = StandardResultsSetPagination
@@ -54,12 +57,9 @@ class Post_CUD_View(APIView):
 
     def delete(self, request, *args, **kwargs):
         user = request.user
-
-        try:
-            id = request.data['id']
-        except:
-            raise BadRequest(
-                "Needed information was not included: resource ID")
+        id = request.GET.get('id')
+        # rases exception if key isn't present or is empty ""
+        validate_key_value(id, "ID")
 
         try:
             instance = Post.objects.get(id=id)
