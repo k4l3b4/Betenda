@@ -1,6 +1,7 @@
+from betenda_api.methods import get_reactions
+from rest_framework import serializers
 from Users.serializers import User_CUD_Serializer
 from .models import Comment
-from rest_framework import serializers
 
 
 class Comment_CUD_Serializer(serializers.ModelSerializer):
@@ -19,12 +20,17 @@ class Comment_CUD_Serializer(serializers.ModelSerializer):
 
 class Comment_GET_Serializer(serializers.ModelSerializer):
     user = User_CUD_Serializer()
+    reactions = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = [
             'user',
             'comment',
+            'reactions',
             'created_at',
             'updated_at',
         ]
+
+    def get_reactions(self, obj):
+        return get_reactions(self, obj)
