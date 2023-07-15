@@ -7,7 +7,6 @@ class HashTag(models.Model):
     HashTag model to be used in posts and articles
     '''
     tag = models.CharField(_("tag"), max_length=255, blank=False, null=True)
-    users = models.ManyToManyField("Users.User", through='UserHashtag')
     created_date = models.DateTimeField(
         _("Created date"), auto_now=False, auto_now_add=True)
 
