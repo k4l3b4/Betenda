@@ -1,5 +1,5 @@
-from Users.models import User
 from Users.serializers import User_CUD_Serializer
+from betenda_api.methods import get_reactions
 from rest_framework import serializers
 from .models import Article
 
@@ -46,6 +46,7 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 class ArticleGetSerializer(serializers.ModelSerializer):
     authors = User_CUD_Serializer(many=True, read_only=True)
+    reactions = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -61,4 +62,8 @@ class ArticleGetSerializer(serializers.ModelSerializer):
             'featured',
             'published_date',
             'modified_date',
+            'reactions'
         ]
+
+    def get_reactions(self, obj):
+        return get_reactions(self, obj)
