@@ -14,14 +14,14 @@ class Post(models.Model):
 
     user = models.ForeignKey("Users.User", verbose_name=_(
         "User"), on_delete=models.PROTECT, blank=True, null=True)
-    content = models.TextField(_("Content"))
+    content = models.TextField(_("Content"), blank=True, db_index=True)
     parent = models.ForeignKey('self', verbose_name=_(
         "Replied to"), related_name="post_parent", on_delete=models.CASCADE, null=True, blank=True)
     slug = AutoSlugField(_("Slug"), populate_from=['title'])
     media = models.FileField(_("Media"), upload_to='post/media/',
                              max_length=None, blank=True, null=True)
     hashtags = models.ManyToManyField(
-        "HashTags.HashTag", blank=True)
+        "HashTags.HashTag", blank=True, db_index=True)
     reactions = GenericRelation("Reactions.Reaction")
     media_type = models.CharField(
         _("Media type"), max_length=20, choices=TYPE.choices, null=True, blank=True)
