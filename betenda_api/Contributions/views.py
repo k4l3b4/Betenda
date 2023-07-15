@@ -1,8 +1,5 @@
-# Create your views here.
-# from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response
+from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response, validate_key_value
 from .models import Poem, Saying, Sentence, Language, Word
 from .serializers import PoemSerializer, SayingSerializer, SentenceSerializer, LanguageSerializer, WordSerializer
 
@@ -50,12 +47,9 @@ class Language_CUD_APIView(APIView):
         raise PermissionDenied("You don't have permission for this action")
 
     def delete(self, request, *args, **kwargs):
-
-        try:
-            id = request.data['id']
-        except:
-            raise BadRequest(
-                "Needed information was not included: resource ID")
+        id = request.GET.get('id')
+        # rases exception if key isn't present or is empty ""
+        validate_key_value(id, "ID")
 
         user = request.user
         groups = ['Admin']
@@ -97,7 +91,7 @@ class Word_CUD_APIView(APIView):
             instance = Word.objects.get(id=id)
         except:
             raise ResourceNotFound()
-        
+
         if user.id != instance.user_id:
             raise PermissionDenied("You are not allowed to update this word")
 
@@ -139,7 +133,7 @@ class Poem_CUD_APIView(APIView):
 
         if user.id != instance.user_id:
             raise PermissionDenied("You are not allowed to update this poem")
-        
+
         serializer = PoemSerializer(instance=instance,
                                     data=request.data, partial=True)
         if not serializer.is_valid():
@@ -214,7 +208,8 @@ class Sentence_CUD_APIView(APIView):
             raise ResourceNotFound("Sentence was not found")
 
         if user.id != instance.user_id:
-            raise PermissionDenied("You are not allowed to update this sentence")
+            raise PermissionDenied(
+                "You are not allowed to update this sentence")
 
         serializer = SentenceSerializer(instance=instance,
                                         data=request.data, partial=True)
