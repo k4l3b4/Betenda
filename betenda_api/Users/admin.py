@@ -1,12 +1,21 @@
 from django.contrib import admin
 
-from .models import Device, Invitation, Password_reset, User
+from .models import Device, UserProfile, Invitation, Password_reset, User
 from django.contrib.auth.models import Permission
 # Register your models here.
 
 @admin.register(Permission)
 class Admin(admin.ModelAdmin):
     list_display = ("name","codename")
+
+@admin.register(UserProfile)
+class Admin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "followers_count",
+        "following_count",
+    )
 
 @admin.register(User)
 class Admin(admin.ModelAdmin):
