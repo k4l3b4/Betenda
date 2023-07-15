@@ -37,6 +37,9 @@
         "Betenda",
         "glottolog",
         "LRCUD",
-        "Roadmaps"
+        "roadmap",
+        "Roadmaps",
+        "simplejwt",
+        "unfollow"
     ],
 }
