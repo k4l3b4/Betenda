@@ -11,8 +11,8 @@ urlpatterns = [
     path('api/comments/', include('Comments.urls')),
     path('api/articles/', include('Articles.urls')),
     path('api/hashtags/', include('Users.urls')),
-    path('api/reactions/', include('Users.urls')),
-    path('api/tags/', include('Users.urls')),
+    path('api/reactions/', include('Reactions.urls')),
+    path('api/roadmap/', include('RoadMaps.urls')),
 ]
 
 if settings.DEBUG:
