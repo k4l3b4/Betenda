@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'Donations.apps.DonationsConfig',
     'Reports.apps.ReportsConfig',
     'RoadMaps.apps.RoadmapsConfig',
+    'Notifications.apps.NotificationsConfig',
     'django_user_agents',
     'django_extensions',
 ]
@@ -155,8 +156,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'user-registration': '15/hour',
-        'login': '10/hour',
-        'update': '20/hour',
+        'login': '5/hour',
+        'update': '1/week',
         'uploads': '20/day',
         'send_email': '1/minute',
         'change_password': '1/day'
@@ -191,9 +192,9 @@ REST_FRAMEWORK = {
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "kaleba647@gmail.com"
-EMAIL_HOST_PASSWORD = 'tufidaiirafepdhk'
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
