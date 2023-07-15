@@ -88,7 +88,7 @@ class Comment_CUD_View(APIView):
 
 class Comment_List_View(generics.ListAPIView):
     serializer_class = Comment_GET_Serializer
-    queryset = Comment.objects.filter(parent=None)
+    queryset = Comment.objects.all()
     pagination_class = StandardResultsSetPagination
 
     def get(self, request, *args, **kwargs):
