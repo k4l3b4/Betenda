@@ -1,39 +1,63 @@
-import Link from "next/link"
-
-import { siteConfig } from "@/config/site"
-import { buttonVariants } from "@/components/ui/button"
+import PostData from "@/components/post/post-data"
+import { Card } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
+import { Mic, Paperclip } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function IndexPage() {
   return (
-    <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
-      <div className="flex max-w-[980px] flex-col items-start gap-2">
-        <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
-          Beautifully designed components <br className="hidden sm:inline" />
-          built with Radix UI and Tailwind CSS.
-        </h1>
-        <p className="max-w-[700px] text-lg text-muted-foreground">
-          Accessible and customizable components that you can copy and paste
-          into your apps. Free. Open Source. And Next.js 13 Ready.
-        </p>
-      </div>
-      <div className="flex gap-4">
-        <Link
-          href={siteConfig.links.docs}
-          target="_blank"
-          rel="noreferrer"
-          className={buttonVariants()}
-        >
-          Documentation
-        </Link>
-        <Link
-          target="_blank"
-          rel="noreferrer"
-          href={siteConfig.links.github}
-          className={buttonVariants({ variant: "outline" })}
-        >
-          GitHub
-        </Link>
-      </div>
-    </section>
+    <div className="flex w-full flex-row justify-around px-4">
+      <aside className="sticky left-0 top-20 h-screen w-72">
+        <h2>Following</h2>
+        <ul>
+          <li><a href="#">My Friend</a></li>
+          <li><a href="#">My Other Friend</a></li>
+          <li><a href="#">My Best Friend</a></li>
+        </ul>
+      </aside>
+      <Separator className="h-full" orientation="vertical" />
+      <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
+        <Card className="flex w-[550px] flex-col gap-y-4 p-2" id="create-post">
+          <Avatar>
+            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          <div>
+            <Textarea className="max-h-44" placeholder="Write whats on your mind!" />
+            <div className="mt-2 flex items-center justify-between">
+              <div>
+                <Button variant={null} size="icon">
+                  <Paperclip className="h-5 w-5" />
+                </Button>
+                <Button variant={null} size="icon">
+                  <Mic className="h-5 w-5" />
+                </Button>
+              </div>
+              <Button className="px-6">Post</Button>
+            </div>
+          </div>
+        </Card>
+        <PostData />
+        <PostData />
+        <PostData />
+        <PostData />
+        <PostData />
+        <PostData />
+        <PostData />
+        <PostData />
+        <PostData />
+      </section>
+      <Separator className="h-full" orientation="vertical" />
+      <aside className="sticky left-0 top-20 h-screen">
+        <h2>Blogroll</h2>
+        <ul>
+          <li><a href="#">My Friend</a></li>
+          <li><a href="#">My Other Friend</a></li>
+          <li><a href="#">My Best Friend</a></li>
+        </ul>
+      </aside>
+    </div>
   )
 }
