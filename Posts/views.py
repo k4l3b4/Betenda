@@ -24,11 +24,18 @@ class Post_CUD_View(APIView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
+        parent_id = request.GET.get('parent_id')
+        parent = validate_key_value(
+            parent_id, "parent ID", raise_exception=False)
 
-        serializer = Post_CUD_Serializer(data=request.data)
+        serializer = Post_CUD_Serializer(
+            data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise BadRequest(serializer.errors)
-        serializer.save(user=user)
+        if parent:
+            serializer.save(user=user, parent_id=parent_id)
+        else:
+            serializer.save(user=user)
         return send_response(serializer.data, "Post created successfully", 201)
 
     def patch(self, request, *args, **kwargs):
