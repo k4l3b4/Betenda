@@ -33,14 +33,20 @@ class WordSerializer(serializers.ModelSerializer):
             'source_language',
             'target_language',
             'synonym',
+            'user',
             'antonym',
+            'created_at',
+            'edited_at',
         ]
         extra_kwargs = {
             'id': {'read_only': True},
             'word': {'required': True, 'validators': [MinLengthValidator(1)]},
             'translation': {'required': True, 'validators': [MinLengthValidator(1)]},
+            'user': {'read_only': True},
             'source_language': {'required': True},
             'target_language': {'required': True},
+            'created_at': {'read_only': True},
+            'edited_at': {'read_only': True},
         }
 
     def validate(self, data):
@@ -67,6 +73,7 @@ class WordSerializer(serializers.ModelSerializer):
 class PoemSerializer(serializers.ModelSerializer):
     user = User_CUD_Serializer()
     reactions = serializers.SerializerMethodField()
+
     class Meta:
         model = Poem
         fields = [
@@ -74,11 +81,18 @@ class PoemSerializer(serializers.ModelSerializer):
             'poem',
             'user',
             'reactions',
+            'recording',
+            'adult',
             'language',
+            'created_at',
+            'edited_at',
         ]
         extra_kwargs = {
             'id': {'read_only': True},
             'user': {'read_only': True},
+            'reactions': {'read_only': True},
+            'created_at': {'read_only': True},
+            'edited_at': {'read_only': True},
         }
 
     def create(self, validated_data):
@@ -93,35 +107,72 @@ class PoemSerializer(serializers.ModelSerializer):
 
 class SayingSerializer(serializers.ModelSerializer):
     reactions = serializers.SerializerMethodField()
+
     class Meta:
         model = Saying
         fields = [
             'id',
             'saying',
+            'language',
             'user',
             'reactions',
-            'language',
+            'adult',
+            'created_at',
+            'edited_at',
         ]
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'user': {'read_only': True},
+            'reactions': {'read_only': True},
+            'created_at': {'read_only': True},
+            'edited_at': {'read_only': True},
+        }
 
     def create(self, validated_data):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
-    
+
     def get_reactions(self, obj):
         return get_reactions(self, obj)
+
 
 class SentenceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sentence
         fields = [
+            'id',
             'translation',
             'sentence',
+            'user',
+            'adult',
             'source_language',
             'target_language',
         ]
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'word': {'required': True, 'validators': [MinLengthValidator(10)]},
+            'translation': {'required': True, 'validators': [MinLengthValidator(10)]},
+            'user': {'read_only': True},
+            'source_language': {'required': True},
+            'target_language': {'required': True},
+        }
+
+    def validate(self, data):
+        source_language = data.get('source_language')
+        target_language = data.get('target_language')
+
+        if source_language and source_language.language_type != 'SOURCE':
+            raise serializers.ValidationError(
+                {'source_language': 'Invalid source language type.'})
+
+        if target_language and target_language.language_type != 'TARGET':
+            raise serializers.ValidationError(
+                {'target_language': 'Invalid target language type.'})
+
+        return data
 
     def create(self, validated_data):
         return super().create(validated_data)
