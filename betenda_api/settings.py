@@ -26,7 +26,7 @@ load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = [".betenda.app", '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 DEBUG = True
 
@@ -37,12 +37,10 @@ CSRF_COOKIE_HTTPONLY = True
 
 CSRF_COOKIE_NAME = "bt_csrf"
 
-CSRF_COOKIE_SECURE = True
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://betenda.app",
-    "https://admin.betenda.app",
-    "http://localhost:3000",
+    'http://localhost:3000',  # Replace with your frontend domain
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -85,12 +83,13 @@ ASGI_APPLICATION = 'betenda_api.asgi.application'
 WSGI_APPLICATION = 'betenda_api.wsgi.application'
 
 MIDDLEWARE = [
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'betenda_api.middleware.auth.JWTAuthenticationCookieMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
@@ -102,7 +101,7 @@ ROOT_URLCONF = 'betenda_api.urls'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "channels.layers.InMemoryChannelLayer" # using redis or another fast service 
     }
 }
 
@@ -185,6 +184,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'betenda_api.middleware.auth.JWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
