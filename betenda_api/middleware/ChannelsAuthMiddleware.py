@@ -1,33 +1,56 @@
+from django.db import close_old_connections
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
-from channels.middleware import BaseMiddleware
-from django.contrib.auth.models import AnonymousUser
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.contrib.auth import get_user_model
+from django.db import close_old_connections
+from rest_framework_simplejwt.tokens import UntypedToken
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from jwt import decode as jwt_decode
 
-class JWTAuthMiddleware(BaseMiddleware):
+class JWTAuthMiddleware:
+    """
+    Custom token auth middleware
+    """
+    def __init__(self, inner):
+        # Store the ASGI application we were passed
+        self.inner = inner
+
     async def __call__(self, scope, receive, send):
-        auth = JWTAuthentication()
 
-        if "query_string" in scope:
-            query_string = scope["query_string"].decode()
-            validated_token = await self.get_validated_token(auth, query_string)
-            user = await self.get_user(auth, validated_token)
+        # Close old database connections to prevent usage of timed out connections
+        close_old_connections()
 
-            if user.is_authenticated:
-                scope["user"] = user
+        # Get the token
+        token = parse_qs(scope["query_string"].decode("utf8"))["token"][0]
 
-        return await super().__call__(scope, receive, send)
-
-    @database_sync_to_async
-    def get_validated_token(self, auth, query_string):
+        # Try to authenticate the user
         try:
-            token = query_string.split("=")[1]
-            return auth.get_validated_token(token)
-        except:
+            # This will automatically validate the token and raise an error if the token is invalid
+            UntypedToken(token)
+        except (InvalidToken, TokenError) as e:
+            # Token is invalid
+            print(e)
             return None
+        else:
+            # Then token is valid, decode it
+            decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            print(decoded_data)
+            # Will return a dictionary like -
+            # {
+            #     "token_type": "access",
+            #     "exp": 1568770772,
+            #     "jti": "5c15e80d65b04c20ad34d77b6703251b",
+            #     "user_id": 6
+            # }
+
+            # Get the user using ID
+            user = await self.get_user(decoded_data["user_id"])
+
+        # Return the inner application directly and let it run everything else
+        return await self.inner(dict(scope, user=user), receive, send)
 
     @database_sync_to_async
-    def get_user(self, auth, validated_token):
-        try:
-            return auth.get_user(validated_token)
-        except:
-            return AnonymousUser()
+    def get_user(self, user_id):
+        return get_user_model().objects.get(id=user_id)
