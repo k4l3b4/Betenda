@@ -7,6 +7,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
         user_id = self.scope["user"].id
+        self.group_name = f'notification_{str(user_id)}'
+
+        # Add the WebSocket connection to the group
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
         await self.channel_layer.group_add(str(user_id), self.channel_name)
 
     async def disconnect(self, close_code):
