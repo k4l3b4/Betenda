@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api-auth/', include('rest_framework.urls')),
     path('api/users/', include('Users.urls')),
     path('api/contributions/', include('Contributions.urls')),
     path('api/posts/', include('Posts.urls')),
@@ -12,8 +13,10 @@ urlpatterns = [
     path('api/articles/', include('Articles.urls')),
     path('api/hashtags/', include('Users.urls')),
     path('api/reactions/', include('Reactions.urls')),
+    path('api/notifications/', include('Notifications.urls')),
     path('api/roadmap/', include('RoadMaps.urls')),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
