@@ -10,6 +10,7 @@ class Admin(admin.ModelAdmin):
     list_display = (
         "user",
         "message",
+        "message_type",
         "is_read",
         "created_at",
     )
