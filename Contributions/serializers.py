@@ -14,7 +14,20 @@ class LanguageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Language
-        fields = ['language', 'iso_code', 'glottolog_code', 'language_type']
+        fields = [
+            'id',
+            'language',
+            'iso_code',
+            'glottolog_code',
+            'created_at',
+            'edited_at',
+            'language_type'
+        ]
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'created_at': {'read_only': True},
+            'edited_at': {'read_only': True},
+        }
 
     def create(self, validated_data):
         return super().create(validated_data)
@@ -24,6 +37,7 @@ class LanguageSerializer(serializers.ModelSerializer):
 
 
 class WordSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Word
         fields = [
@@ -64,45 +78,35 @@ class WordSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        return super().create(validated_data)
+        synonyms = validated_data.pop("synonym", [])
+        antonyms = validated_data.pop("antonym", [])
+        instance = super().create(validated_data)
+        for synonym in synonyms:
+            instance.synonym.add(synonyms)
+        for antonym in antonyms:
+            instance.antonym.add(antonyms)
+        return instance
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
 
-class PoemSerializer(serializers.ModelSerializer):
-    user = User_CUD_Serializer()
-    reactions = serializers.SerializerMethodField()
-
+class Poem_CUD_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Poem
         fields = [
             'id',
             'poem',
-            'user',
-            'reactions',
             'recording',
             'adult',
             'language',
-            'created_at',
-            'edited_at',
         ]
-        extra_kwargs = {
-            'id': {'read_only': True},
-            'user': {'read_only': True},
-            'reactions': {'read_only': True},
-            'created_at': {'read_only': True},
-            'edited_at': {'read_only': True},
-        }
 
     def create(self, validated_data):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
-
-    def get_reactions(self, obj):
-        return get_reactions(self, obj)
 
 
 class SayingSerializer(serializers.ModelSerializer):
@@ -153,8 +157,8 @@ class SentenceSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             'id': {'read_only': True},
-            'word': {'required': True, 'validators': [MinLengthValidator(10)]},
-            'translation': {'required': True, 'validators': [MinLengthValidator(10)]},
+            'word': {'required': True, 'validators': [MinLengthValidator(5)]},
+            'translation': {'required': True, 'validators': [MinLengthValidator(5)]},
             'user': {'read_only': True},
             'source_language': {'required': True},
             'target_language': {'required': True},
