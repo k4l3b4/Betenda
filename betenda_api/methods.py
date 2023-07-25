@@ -1,4 +1,5 @@
 from enum import Enum
+import unicodedata
 from django.utils import timezone
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -169,7 +170,8 @@ def send_error(err_type: ErrorType, err: str | dict, code: int = 400):
     ]), err(string or dict) and code(int) to send a JsonResponse Error with the format of:\n
     {
         "type": err_type,\n
-        "error": err
+        "error": err,\n
+        "timestamp": timezone.now()
     }
     """
     return Response({"type": err_type.value, "error": err, "timestamp": timezone.now()}, status=code)
@@ -256,11 +258,12 @@ def get_reactions(self, obj):
     }
 
 
-def save_notification(user, message):
+def save_notification(user, message, type="SYSTEM"):
     '''
     save a notification
     '''
-    notification = Notification.objects.create(user=user, message=message)
+    notification = Notification.objects.create(
+        user=user, message_type=type, message=message)
     # Implement logic to send the notification via email, push notification, etc.
     # For simplicity, we are only creating and returning the notification here
     return notification
@@ -272,4 +275,12 @@ def send_notification(user_id, object, type="notify"):
     for now this will only handle notifications from the Notifications instance
     '''
     async_to_sync(channel_layer.group_send)(
-        str(user_id), {"type": type, "object": object})
+        f'notification_{str(user_id)}', {"type": type, "object": object})
+
+
+def normalize_emoji(emoji):
+    return unicodedata.normalize("NFC", emoji)
+
+
+def compare_emojis(first_emoji, second_emoji):
+    return normalize_emoji(first_emoji) == normalize_emoji(second_emoji)
