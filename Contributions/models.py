@@ -65,7 +65,7 @@ class Poem(models.Model):
     poem = models.TextField(_("Poem"), blank=False, unique=True, error_messages={
         "unique": "This poem has already been submitted."
     }, db_index=True)
-    recording = models.FileField(_("Poem recording"), upload_to=None, max_length=100)
+    recording = models.FileField(_("Poem recording"), upload_to=None, max_length=100, blank=True, null=True)
     language = models.ForeignKey("Language", related_name="poem_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     adult = models.BooleanField(_("18+ poem"), default=False)
