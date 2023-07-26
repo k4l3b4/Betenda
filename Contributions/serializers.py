@@ -1,5 +1,5 @@
 from Users.serializers import User_CUD_Serializer
-from betenda_api.methods import get_reactions
+from betenda_api.methods import get_reactions_method
 from rest_framework.fields import MinLengthValidator
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
@@ -139,7 +139,7 @@ class SayingSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def get_reactions(self, obj):
-        return get_reactions(self, obj)
+        return get_reactions_method(self, obj)
 
 
 class SentenceSerializer(serializers.ModelSerializer):
