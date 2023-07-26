@@ -1,4 +1,4 @@
-from betenda_api.methods import get_reactions
+from betenda_api.methods import get_reactions_method
 from rest_framework import serializers
 from Users.serializers import User_CUD_Serializer
 from .models import Comment
@@ -25,12 +25,14 @@ class Comment_GET_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = [
-            'user',
+            'id',
             'comment',
+            'user',
+            'parent_id',
             'reactions',
             'created_at',
             'updated_at',
         ]
 
     def get_reactions(self, obj):
-        return get_reactions(self, obj)
+        return get_reactions_method(self, obj)
