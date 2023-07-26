@@ -13,14 +13,29 @@ class CampaignSerializer(serializers.ModelSerializer):
             "campaign_start",
             "campaign_end",
         ]
+    def create(self, validated_data):
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
 
 
 class DonationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donation
+
         fields = [
+            "user",
             "donation_amount",
             "donation_for",
             "remark",
             "donation_date",
         ]
+
+        extra_kwargs = {
+            'user' : {'read_only':True},
+            'donation_date' : {'read_only':True},
+        }
+
+    def create(self, validated_data):
+        return super().create(validated_data)
