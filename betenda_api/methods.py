@@ -1,6 +1,7 @@
 from enum import Enum
 import unicodedata
 from django.utils import timezone
+from Posts.models import Post
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from Notifications.models import Notification
@@ -230,7 +231,7 @@ def validate_key_value(data=None, name: str | None = None, raise_exception=True)
     return False
 
 
-def get_reactions(self, obj):
+def get_reactions_method(self, obj):
     '''
     takes in context and obj to retrieve reactions for the specific objects
     '''
@@ -256,6 +257,15 @@ def get_reactions(self, obj):
             for item in reactions
         ]
     }
+
+
+
+def get_replies_count(self, obj):
+        # Filter and limit the replies for each parent post
+    replies = Post.objects.filter(parent_id=obj.id).count()
+    return replies    
+
+
 
 
 def save_notification(user, message, type="SYSTEM"):
