@@ -6,14 +6,14 @@ class Notification(models.Model):
     TYPE = (
         ('SYSTEM', 'System'),
         ('REPLIES', 'Draft'),
-        ('COMMENTS', 'Published'),
-        ('FRIENDS', 'Published'),
+        ('COMMENTS', 'Comments'),
+        ('FRIENDS', 'Friends'),
         ('MENTIONS', 'Mentions'),
-        ('ACHIEVEMENTS', 'Published'),
     )
 
     user = models.ForeignKey('Users.User', verbose_name=_(
         "User"), on_delete=models.CASCADE)
+    
     message = models.TextField(_("Message"))
     message_type = models.CharField(
         _("Message type"), choices=TYPE, default="SYSTEM", max_length=50)
