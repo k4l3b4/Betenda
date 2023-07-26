@@ -1,4 +1,4 @@
-# Betenda - Backend API for Language Community
+# Betenda API - Backend API for Language Community
 
 Betenda is a self hosted API for people who want to build a private community dedicated to languages, where users can contribute to the growth of their language through word, sayings, sentences, and poems contributions. Additionally, it offers a Twitter-like feature that allows users to post, read articles, comment, react, and much more.
 
@@ -18,17 +18,19 @@ the client next.js webapp is still in it's infancy and will be made public as fa
 
 ## Introduction
 
-Betenda is a backend API built with Django and Django REST Framework (DRF). It provides a robust and scalable platform for creating a private community centered around languages. Users can contribute to linguistic content like words, sayings, sentences, and poems, fostering the growth of various languages. Moreover, the platform offers a Twitter-like social networking experience, allowing users to share posts, read articles, comment, react, and engage in a wide range of interactions.
+Betenda API is a backend API built with Django and Django REST Framework (DRF). It provides a robust and scalable platform for creating a private community centered around languages. Users can contribute to linguistic content like words, sayings, sentences, and poems, fostering the growth of their languages. Moreover, the platform offers a Twitter-like social networking experience, allowing users to share posts, read articles, comment, react, and engage in a wide range of interactions.
 
 ## Features
 
 - User authentication and authorization.
 - Contribution of words, sayings, sentences, and poems for various languages.
 - Post creation, reading, updating, and deletion.
-- Article publication and browsing.
-- Commenting and reacting to posts and articles.
+- Article publication(Admins) and reading.
+- Commenting and reacting to posts, articles, poems and sayings.
+- Reporting user generated content
+- Platform and Campaign Donations for projects that are more invested in the well being and improvement of their local community
 - Social networking features (following, notifications, etc.).
-- And much more!
+- And much more to come, contact me if you have any feature ideas!
 
 ## Getting Started
 
