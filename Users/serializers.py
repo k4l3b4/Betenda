@@ -20,31 +20,50 @@ def validate_terms(value):
 
 class User_CUD_Serializer(serializers.ModelSerializer):
     user_name = serializers.CharField(validators=[UnicodeUsernameValidator()])
-    terms = serializers.BooleanField(
-        validators=[validate_terms], required=True, write_only=True)
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
+    followers_count = serializers.IntegerField(
+        source='userprofile.followers_count', read_only=True)
+    following_count = serializers.IntegerField(
+        source='userprofile.following_count', read_only=True)
+    request_to_be_followed = serializers.SerializerMethodField(read_only=True)
+    request_to_follow = serializers.SerializerMethodField(read_only=True)
+    requested_user_follows = serializers.SerializerMethodField(read_only=True)
+    requesting_user_follows = serializers.SerializerMethodField(read_only=True)
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'bio', 'user_name', 'profile_avatar',
-                  'email', 'sex', 'birth_date', 'password', 'password2', 'terms', 'verified', 'has_rated', 'is_active', 'joined_date', 'last_login',
+        fields = ['id', 'first_name', 'last_name',
+                  'bio', 'user_name', 'profile_avatar',
+                  'email', 'sex',
+                  'request_to_be_followed',
+                  'request_to_follow',
+                  'birth_date',
+                  'profile_cover',
+                  'password', 'password2',
+                  'verified',
+                  'followers_count', 'following_count',
+                  'requested_user_follows',
+                  'requesting_user_follows',
+                  'has_rated', 'is_active', 'joined_date', 'last_login',
                   ]
+
         extra_kwargs = {
             'id': {'read_only': True},
             'first_name': {'required': True},
             'last_name': {'required': False},
             'user_name': {'required': True},
             'bio': {'read_only': True},
+            'profile_cover': {'read_only': True},
             'profile_avatar': {'read_only': True},
             'email': {'required': True, 'write_only': True},
-            'sex': {'required': True},
-            'birth_date': {'required': True, 'write_only': True},
+            'sex': {'required': False},
+            'birth_date': {'required': False, 'write_only': True},
             'verified': {'read_only': True},
             'has_rated': {'read_only': True},
             'is_active': {'read_only': True},
@@ -65,45 +84,88 @@ class User_CUD_Serializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+    def get_request_to_be_followed(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        requesting_user = self.context['request'].user
+        # if the user is requesting his own account return None
+        if instance != requesting_user:
+            try:
+                exists = FollowerRequest.objects.get(
+                    user_profile=requesting_user.userprofile,
+                    follower=instance,
+                    is_approved=False
+                )
 
-# class UserTokenSerializer(TokenObtainPairSerializer):
+            except:
+                return False
+            if exists:
+                return True
+        return None
 
-#     def get_token(cls, user):
-#         token = super().get_token(user)
+    def get_request_to_follow(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        try:
+          requesting_user = self.context['request'].user
+        except:
+          return False
+        # if the user is requesting his own account return None
+        if instance != requesting_user:
+            try:
+                exists = FollowerRequest.objects.get(
+                    user_profile=instance.userprofile,
+                    follower=requesting_user,
+                    is_approved=False
+                )
+            except:
+                return False
 
-#         # Customize token claims
-#         token['email'] = user.email
+            if exists:
+                return True
+        return None
 
-#         return token
+    def get_requested_user_follows(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        try:
+          requesting_user = self.context['request'].user
+        except:
+          return False
+        # if the user is requesting his own account return None
+        if instance != requesting_user:
+            try:
+                exists = instance.userprofile.following.get(
+                    pk=requesting_user.pk)
+            except:
+                return False
 
-#     def validate(self, attrs):
-#         email = attrs.get('email')
-#         password = attrs.get('password')
+            if exists:
+                return True
+        return None
 
-#         user = authenticate(email=email, password=password)
-#         if user is not None:
-#             if user.is_active:
-#                 data = super().validate(attrs)
-#                 refresh = RefreshToken.for_user(user)
-#                 # Add custom claims to the token
-#                 data['access'] = str(refresh.access_token)
-#                 data['refresh'] = str(refresh)
-#                 data['lifetime'] = int(refresh.access_token.lifetime.total_seconds())
-
-#                 response = Response(data)
-
-#                 # Set cookies in the response
-#                 expiration = datetime.now() + refresh.access_token.lifetime
-#                 response.set_cookie('access', str(refresh.access_token), httponly=True, secure=True, expires=expiration)
-#                 response.set_cookie('refresh', str(refresh), httponly=True, secure=True, expires=timedelta(days=30))
-
-#                 return response
-#             else:
-#                 raise UnAuthenticated("Account is blocked or not activated")
-#         else:
-#             raise UnAuthenticated('Incorrect email and password combination!')
+    def get_requesting_user_follows(self, instance):
+        # Check if the user (instance) follows the requesting user
+        try:
+          requesting_user = self.context['request'].user
+        except:
+          return False
+        # if the user is requesting his own account return None
+        if instance != requesting_user:
+            try:
+                exists = instance.userprofile.followers.get(
+                    pk=requesting_user.pk)
+            except:
+                return False
+            if exists:
+                return True
+        return None
 
 
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['email', 'password']
 
 
 class InvitationSerializer(serializers.ModelSerializer):
@@ -155,12 +217,24 @@ class User_GET_Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'user_name',
-                  'bio', 'profile_avatar', 'sex', 'birth_date', 'userprofile']
+        fields = ['id', 'first_name', 'last_name', 'user_name', 'email',
+                  'bio', 'profile_avatar', 'profile_cover', 'sex', 'birth_date', 'userprofile']
+
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'userprofile': {'read_only': True},
+            'email': {'write_only': True},
+        }
 
 
 class FollowerRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = FollowerRequest
         fields = '__all__'
-        depth = 1
+
+
+class User_SIMPLE_Serializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'user_name']
