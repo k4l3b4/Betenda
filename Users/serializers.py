@@ -86,7 +86,10 @@ class User_CUD_Serializer(serializers.ModelSerializer):
 
     def get_request_to_be_followed(self, instance):
         # Check if the requesting user (if authenticated) follows the user
-        requesting_user = self.context['request'].user
+        try:
+          requesting_user = self.context['request'].user
+        except:
+          return False
         # if the user is requesting his own account return None
         if instance != requesting_user:
             try:
