@@ -15,6 +15,8 @@ urlpatterns = [
     path('api/reactions/', include('Reactions.urls')),
     path('api/notifications/', include('Notifications.urls')),
     path('api/roadmap/', include('RoadMaps.urls')),
+    path('api/donations/', include('Donations.urls')),
+    path("debug/", include("debug_toolbar.urls")),
 ]
 
 if settings.DEBUG:

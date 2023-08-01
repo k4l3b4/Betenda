@@ -9,6 +9,7 @@ from Notifications.models import Notification
 class Admin(admin.ModelAdmin):
     list_display = (
         "user",
+        "sender",
         "message",
         "message_type",
         "is_read",
