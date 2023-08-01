@@ -6,7 +6,6 @@ from django.utils.translation import gettext as _
 
 class Reaction(models.Model):
     REACTION_CHOICES = (
-        ('Like', 'Like'),
         ('😍', 'Heart eyes'),
         ('🥰', 'Smiling face with hearts'),
         ('🤩', 'Star-struck'),
@@ -31,7 +30,7 @@ class Reaction(models.Model):
         ('🙊', 'Speak-no-evil monkey'),
         ('🙉', 'Hear-no-evil monkey'),
         ('👀', 'Eyes'),
-        ('❤', 'Red heart'),
+        ('❤️', 'Red heart'),
         ('💔', 'Broken heart'),
         ('🆘', 'SOS'),
         ('🙆🏾‍♂️', 'Man raising hand'),
@@ -46,8 +45,8 @@ class Reaction(models.Model):
         _("Reaction"), max_length=255, choices=REACTION_CHOICES)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     content_type = models.ForeignKey(ContentType, verbose_name=_(
-        "Content type"), on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField(_("Object id"))
+        "Content type"), on_delete=models.CASCADE, db_index=True)
+    object_id = models.PositiveIntegerField(_("Object id"), db_index=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):

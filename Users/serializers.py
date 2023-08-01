@@ -22,7 +22,8 @@ class User_CUD_Serializer(serializers.ModelSerializer):
     user_name = serializers.CharField(validators=[UnicodeUsernameValidator()])
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
+        validators=[UniqueValidator(queryset=User.objects.all())],
+        write_only=True
     )
     followers_count = serializers.IntegerField(
         source='userprofile.followers_count', read_only=True)
@@ -59,10 +60,11 @@ class User_CUD_Serializer(serializers.ModelSerializer):
             'last_name': {'required': False},
             'user_name': {'required': True},
             'bio': {'read_only': True},
+            'password': {'write_only': True},
+            'password2': {'write_only': True},
             'profile_cover': {'read_only': True},
             'profile_avatar': {'read_only': True},
-            'email': {'required': True, 'write_only': True},
-            'sex': {'required': False},
+             'sex': {'required': False},
             'birth_date': {'required': False, 'write_only': True},
             'verified': {'read_only': True},
             'has_rated': {'read_only': True},
@@ -237,7 +239,6 @@ class FollowerRequestSerializer(serializers.ModelSerializer):
 
 
 class User_SIMPLE_Serializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
-        fields = ['id', 'user_name']
+        fields = ['id', 'profile_avatar', 'user_name', 'first_name', 'last_name']

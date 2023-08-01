@@ -5,7 +5,8 @@ from django.utils.translation import gettext as _
 
 class MileStoneType(models.Model):
     TYPE_CHOICES = (
-        ('10_invites', 'Get to your invitation threshold'),
+        ('10_invites', 'Get to your invitation limit'),
+        
         ('100_words', 'Contribute 100 words'),
         ('1000_words', 'Contribute 1000 words'),
         ('5000_words', 'Contribute 5000 words'),
@@ -14,10 +15,21 @@ class MileStoneType(models.Model):
         ('20000_words', 'Contribute 20000 words'),
         ('25000_words', 'Contribute 25000 words'),
         ('30000_words', 'Contribute 30000 words'),
-        ('write_a_poem', 'The poet'),
-        ('write_5_poem', 'Descendant of Walt Whitman'),
-        ('write_15_poem', 'Descendant of Emily Dickson'),
-        ('write_50_poem', 'Descendant of Tsegaye G/Medhin'),
+
+        ('write_a_poem', 'Write a poem'),
+        ('write_5_poem', 'Write 5 poems'),
+        ('write_15_poem', 'Write 15 poems'),
+        ('write_50_poem', 'Write 50 poems'),
+
+        ('write_10_sayings', 'Write 10 sayings'),
+        ('write_20_sayings', 'Write 20 sayings'),
+        ('write_30_sayings', 'Write 30 sayings'),
+        ('write_40_sayings', 'Write 40 sayings'),
+
+        ('write_10_sentences', 'Write 10 sentences'),
+        ('write_20_sentences', 'Write 20 sentences'),
+        ('write_30_sentences', 'Write 30 sentences'),
+        ('write_40_sentences', 'Write 40 sentences'),
     )
 
     milestone_name = models.CharField(_("Name"), max_length=255, blank=False, null=True)

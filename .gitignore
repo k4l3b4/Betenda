@@ -4,3 +4,4 @@ migrations
 bet_env
 media
 exmp.md
+*.py.bak

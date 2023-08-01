@@ -22,7 +22,7 @@ class Article(models.Model):
         _("Article image"), upload_to='article/images/', max_length=None, blank=True, null=True)
     hashtags = models.ManyToManyField(
         "HashTags.HashTag", blank=True, db_index=True)
-    authors = models.ManyToManyField("Users.User", verbose_name=_("Authors"))
+    authors = models.ManyToManyField("Users.User", verbose_name=_("Authors"), blank=True)
     status = models.CharField(_("Status"), choices=STATUS, max_length=255)
     featured = models.BooleanField(_("Featured"), default=False)
     published_date = models.DateTimeField(

@@ -12,26 +12,21 @@ class Campaign_CU_View(APIView):
     permission_classes = [IsAdminUser,]
 
     def post(self, request, *args, **kwargs):
-        try:
-            data = request.data
-            serializer = self.serializer_class(data=data)
-            if not serializer.is_valid():
-                raise BadRequest(serializer.errors)
-            serializer.save()
-            return send_response("Campaign added successfully", 201)
-        except:
-          return ServerError("There was an error on our side")
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        if not serializer.is_valid():
+            raise BadRequest(serializer.errors)
+        serializer.save()
+        return send_response("Campaign added successfully", 201)
+
         
     def patch(self, request, *args, **kwargs):
-        try:
-            data = request.data
-            serializer = self.serializer_class(data=data, partial=True)
-            if not serializer.is_valid():
-                raise BadRequest(serializer.errors)
-            serializer.save()
-            return send_response("Campaign updated successfully", 200)
-        except:
-          return ServerError("There was an error on our side")
+        data = request.data
+        serializer = self.serializer_class(data=data, partial=True)
+        if not serializer.is_valid():
+            raise BadRequest(serializer.errors)
+        serializer.save()
+        return send_response("Campaign updated successfully", 200)
 
 class Donation_CR_View(APIView):
     queryset = Donation.objects.all()

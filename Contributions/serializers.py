@@ -1,4 +1,3 @@
-from Users.serializers import User_CUD_Serializer
 from betenda_api.methods import get_reactions_method
 from rest_framework.fields import MinLengthValidator
 from rest_framework.validators import UniqueValidator
@@ -82,9 +81,9 @@ class WordSerializer(serializers.ModelSerializer):
         antonyms = validated_data.pop("antonym", [])
         instance = super().create(validated_data)
         for synonym in synonyms:
-            instance.synonym.add(synonyms)
+            instance.synonym.add(synonym)
         for antonym in antonyms:
-            instance.antonym.add(antonyms)
+            instance.antonym.add(antonym)
         return instance
 
     def update(self, instance, validated_data):
@@ -107,7 +106,16 @@ class Poem_CUD_Serializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+    
 
+class Poem_Notification_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Poem
+        fields = [
+            'id',
+            'poem',
+            'slug',
+        ]
 
 class SayingSerializer(serializers.ModelSerializer):
     reactions = serializers.SerializerMethodField()
