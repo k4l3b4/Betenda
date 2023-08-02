@@ -268,12 +268,12 @@ def get_replies_count(self, obj):
 
 
 
-def save_notification(user, message, type="SYSTEM"):
+def save_notification(user, message, type="7", sender=None, post=None, article=None, comment=None):
     '''
     save a notification
     '''
     notification = Notification.objects.create(
-        user=user, message_type=type, message=message)
+        user=user, message_type=type, message=message, sender=sender, post=post, article=article, comment=comment)
     # Implement logic to send the notification via email, push notification, etc.
     # For simplicity, we are only creating and returning the notification here
     return notification
