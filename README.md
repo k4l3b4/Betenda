@@ -23,21 +23,22 @@ Betenda API is a backend API built with Django and Django REST Framework (DRF). 
 ## Features
 
 - User authentication and authorization.
-- Contribution of words, sayings, sentences, and poems for various languages.
+- Contribution of words, sayings, sentences, and poems for various languages of your choice.
 - Post creation, reading, updating, and deletion.
 - Article publication(Admins) and reading.
+- Real time notifications.
 - Commenting and reacting to posts, articles, poems and sayings.
 - Reporting user generated content
 - Platform and Campaign Donations for projects that are more invested in the well being and improvement of their local community
 - Social networking features (following, notifications, etc.).
-- And much more to come, contact me if you have any feature ideas!
+- And much more to come, contact me if you have any feature ideas or just submit a pull request!
 
 ## Getting Started
 
 ### Prerequisites
 
 Before running the Betenda API, ensure you have the following installed:
-- Python (version 3.8, 3.9, 3.10, 3.11)
+- Python (version 3.8+)
 
 ### Installation
 
