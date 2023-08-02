@@ -1,17 +1,38 @@
-from betenda_api.methods import BadRequest,ServerError, PermissionDenied, ResourceNotFound, check_user_permissions, send_response
-from rest_framework.views import APIView
-from Articles.models import Article
-from Articles.serializers import ArticleGetSerializer, ArticleSerializer
-from betenda_api.pagination import StandardResultsSetPagination
 from rest_framework import generics
+from rest_framework.views import APIView
+from django.db.models import Count
+from betenda_api.methods import (BadRequest, PermissionDenied,
+                                 ResourceNotFound, check_user_permissions,
+                                 send_response)
+from betenda_api.pagination import StandardResultsSetPagination
+
+from .models import Article
+from .serializers import (ArticleGetSerializer, ArticleListSerializer,
+                          ArticleSerializer)
 
 
 # Create your views here.
 class Article_List_View(generics.ListAPIView):
-    queryset = Article.objects.filter(status="PUBLISHED")
-    serializer_class = ArticleSerializer
+    queryset = Article.objects.filter(status="PUBLISHED").prefetch_related('reactions')
+    serializer_class = ArticleListSerializer
     pagination_class = StandardResultsSetPagination
 
+class Article_Trending_View(generics.ListAPIView):
+    serializer_class = ArticleListSerializer
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        # annotate each article with the total number of reactions they have
+        queryset = Article.objects.filter(status="PUBLISHED").annotate(
+            total_reactions=Count('reactions')
+        ).prefetch_related('reactions')
+
+        # order the articles by the total number of reactions in descending order
+        queryset = queryset.order_by('-total_reactions')
+
+        # return the top 5 articles
+        return queryset[:5]
+    
 
 class Article_Get_View(generics.RetrieveAPIView):
     queryset = Article.objects.filter(status="PUBLISHED")
@@ -22,7 +43,7 @@ class Article_Get_View(generics.RetrieveAPIView):
             article = self.queryset.get(slug=slug)
         except:
             raise ResourceNotFound("The article was not found")
-        serializer = ArticleGetSerializer(article)
+        serializer = ArticleGetSerializer(article, context={'request':request})
         return send_response(serializer.data, "Article retrieved successfully")
 
 
@@ -42,7 +63,7 @@ class Article_CUD_View(APIView):
             authors_list = [user_id] + [author.strip()
                                         for author in authors.split(',')]
         else:
-            authors_list = None
+            authors_list = [user_id]
         groups = ['Admin']
         perms = ['Articles.add_article']
         passable_data = {
@@ -55,7 +76,6 @@ class Article_CUD_View(APIView):
             "authors": authors_list,
         }
         if check_user_permissions(user=user, groups=groups, perms=perms):
-            print(passable_data)
             serializer = ArticleSerializer(data=passable_data)
             if not serializer.is_valid():
                 raise BadRequest(serializer.errors)
@@ -73,7 +93,7 @@ class Article_CUD_View(APIView):
             authors_list = [user_id] + [author.strip()
                                         for author in authors.split(',')]
         else:
-            authors_list = None
+            authors_list = [user_id]
         groups = ['Admin']
         perms = ['Articles.change_article']
         passable_data = {
