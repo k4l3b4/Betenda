@@ -69,6 +69,7 @@ class Poem(models.Model):
     language = models.ForeignKey("Language", related_name="poem_language", verbose_name=_(
         "Language"), on_delete=models.PROTECT)
     adult = models.BooleanField(_("18+ poem"), default=False)
+    report = GenericRelation("Reports.Report")
     reactions = GenericRelation("Reactions.Reaction")
     comments = GenericRelation("Comments.Comment")
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)

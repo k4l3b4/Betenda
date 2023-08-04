@@ -27,6 +27,7 @@ class Article(models.Model):
     featured = models.BooleanField(_("Featured"), default=False)
     published_date = models.DateTimeField(
         _("Published date"), auto_now=False, auto_now_add=True)
+    report = GenericRelation("Reports.Report")
     modified_date = models.DateTimeField(
         _("modified date"), auto_now=True, auto_now_add=False)
     reactions = GenericRelation("Reactions.Reaction")

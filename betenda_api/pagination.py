@@ -9,7 +9,7 @@ class LargeResultsSetPagination(PageNumberPagination):
     '''
     Get 100 posts at once and a max page size of 1000
     '''
-    page_size = 100
+    page_size = 50
     page_size_query_param = 'page_size'
     max_page_size = 1000
 
@@ -23,7 +23,7 @@ class LargeResultsSetPagination(PageNumberPagination):
         })
 
 DEFAULT_STANDARD_PAGE = 1
-DEFAULT_STANDARD_PAGE_SIZE = 20
+DEFAULT_STANDARD_PAGE_SIZE = 10
 
 
 class StandardResultsSetPagination(PageNumberPagination):
