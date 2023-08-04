@@ -2,6 +2,7 @@ from enum import Enum
 import unicodedata
 from django.utils import timezone
 from Posts.models import Post
+from Users.models import FollowerRequest
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from Notifications.models import Notification
@@ -9,7 +10,6 @@ from Reactions.models import Reaction, ReactionCount
 from django.contrib.contenttypes.models import ContentType
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-import json
 
 channel_layer = get_channel_layer()
 
@@ -294,3 +294,83 @@ def normalize_emoji(emoji):
 
 def compare_emojis(first_emoji, second_emoji):
     return normalize_emoji(first_emoji) == normalize_emoji(second_emoji)
+
+
+
+# friends etc methods
+def check_request_to_be_followed(self, instance):
+    # Check if the requesting user (if authenticated) follows the user
+    try:
+        requesting_user = self.context['request'].user
+    except:
+        return False
+    # if the user is requesting his own account return None
+    if instance != requesting_user:
+        try:
+            exists = FollowerRequest.objects.get(
+                user_profile=requesting_user.userprofile,
+                follower=instance,
+                is_approved=False
+            )
+
+        except:
+            return False
+        if exists:
+            return True
+    return None
+
+def check_request_to_follow(self, instance):
+    # Check if the requesting user (if authenticated) follows the user
+    try:
+        requesting_user = self.context['request'].user
+    except:
+        return False
+    # if the user is requesting his own account return None
+    if instance != requesting_user:
+        try:
+            exists = FollowerRequest.objects.get(
+                user_profile=instance.userprofile,
+                follower=requesting_user,
+                is_approved=False
+            )
+        except:
+            return False
+
+        if exists:
+            return True
+    return None
+
+def check_requested_user_follows(self, instance):
+    # Check if the requesting user (if authenticated) follows the user
+    try:
+        requesting_user = self.context['request'].user
+    except:
+        return False
+    # if the user is requesting his own account return None
+    if instance != requesting_user:
+        try:
+            exists = instance.userprofile.following.get(
+                pk=requesting_user.pk)
+        except:
+            return False
+
+        if exists:
+            return True
+    return None
+
+def check_requesting_user_follows(self, instance):
+    # Check if the user (instance) follows the requesting user
+    try:
+        requesting_user = self.context['request'].user
+    except:
+        return False
+    # if the user is requesting his own account return None
+    if instance != requesting_user:
+        try:
+            exists = instance.userprofile.followers.get(
+                pk=requesting_user.pk)
+        except:
+            return False
+        if exists:
+            return True
+    return None
