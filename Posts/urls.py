@@ -8,6 +8,8 @@ urlpatterns = [
 
     path('posts_by_tag', Post_List_GET_View.as_view(
         {'get': 'get_post_with_tag'}), name="post_filter_with_tag_view"),
+    path('posts_by_user', Post_List_GET_View.as_view(
+        {'get': 'get_user_posts'}), name="post_filter_with_tag_view"),
     path('get_post/<slug:slug>', Post_List_GET_View.as_view(
         {'get': 'get_post'}), name="get_replies_by_slug"),
     path('get_replies', Post_List_GET_View.as_view(

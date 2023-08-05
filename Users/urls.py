@@ -11,6 +11,12 @@ urlpatterns = [
     path('filtered_users', CurrentUserView.as_view(
         {'get': 'get_filtered_users'}), name="filtered_users_view"),
 
+    path('top_accounts', CurrentUserView.as_view(
+        {'get': 'get_top_accounts'}), name="top_accounts_view"),
+
+    path('mutual_users', CurrentUserView.as_view(
+        {'get': 'mutual_friends_following'}), name="mutual_friends_view"),
+
     path('profile', CurrentUserView.as_view(
         {'patch': 'update_current_user'}), name="update_current_user_view"),
     path('get_user', CurrentUserView.as_view(

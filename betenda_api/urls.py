@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/notifications/', include('Notifications.urls')),
     path('api/roadmap/', include('RoadMaps.urls')),
     path('api/donations/', include('Donations.urls')),
+    path('api/reports/', include('Reports.urls')),
     path("debug/", include("debug_toolbar.urls")),
 ]
 
