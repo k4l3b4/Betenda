@@ -6,19 +6,11 @@ from django.utils.translation import gettext as _
 
 # Create your models here.
 class Report(models.Model):
-    TYPE = (
-        ('TYPE1', 'Type 1'),
-        ('TYPE2', 'Type 2'),
-        ('TYPE3', 'Type 3'),
-        ('TYPE4', 'Type 4'),
-        ('TYPE5', 'Type 5'),
-        ('TYPE6', 'Type 6'),
-    )
-    # user foreignkey optional
     user = models.ForeignKey(
         "Users.User", verbose_name=_("User"), on_delete=models.CASCADE)
-    report = models.TextField(_("Comment"), blank=False, null=True)
-    report_type = models.CharField(_("Report type"), max_length=255, choices=TYPE)
+    report = models.TextField(_("Comment"), blank=True, null=True)
+    # not a list of predefined choices to make it flexible, optional choices will be coded in the frontend
+    report_type = models.CharField(_("Report type"), max_length=255)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     content_type = models.ForeignKey(
         ContentType, verbose_name=_("Content type"), on_delete=models.CASCADE)
