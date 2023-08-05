@@ -23,6 +23,21 @@ class Post_List_GET_View(viewsets.ModelViewSet):
             serializer.data, request)
 
         return pagination_class.get_paginated_response(paginated_posts)
+    
+    @action(detail=True, methods=['get'])
+    def get_user_posts(self, request):
+        username = request.GET.get('username')
+        # Raises an exception if the key isn't present or is an empty string
+        validate_key_value(username, "username") 
+
+        posts = self.queryset.filter(user__user_name=username).prefetch_related('reactions', 'post_parent')
+        serializer = Post_CUD_Serializer(
+            posts, many=True, context={'request': request})
+        pagination_class = StandardResultsSetPagination()
+        paginated_posts = pagination_class.paginate_queryset(
+            serializer.data, request)
+
+        return pagination_class.get_paginated_response(paginated_posts)
 
     @action(detail=True, methods=['get'])
     def get_post(self, request, slug):
