@@ -8,9 +8,9 @@ from django.utils.translation import gettext as _
 class Report(models.Model):
     user = models.ForeignKey(
         "Users.User", verbose_name=_("User"), on_delete=models.CASCADE)
-    report = models.TextField(_("Comment"), blank=True, null=True)
+    report = models.TextField(_("Optional comment"), blank=True, null=True)
     # not a list of predefined choices to make it flexible, optional choices will be coded in the frontend
-    report_type = models.CharField(_("Report type"), max_length=255)
+    report_type = models.CharField(_("Report type"), max_length=255, blank=False)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     content_type = models.ForeignKey(
         ContentType, verbose_name=_("Content type"), on_delete=models.CASCADE)

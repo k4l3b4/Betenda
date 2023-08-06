@@ -8,32 +8,23 @@ from betenda_api.methods import save_notification
 def create_send_notification_for_reactions(sender, instance, created, **kwargs):
     if created:
         resource_type = instance.content_type.model.lower()
-
         if resource_type != "article":
             recipient = instance.content_object.user
         else:
             recipient = instance.content_object.authors.first()
-
-        print('recipient:', recipient)
-
         if recipient != instance.user:
             if resource_type == "article":
                 notification = save_notification(user=recipient, message=f"Reacted to your article: {instance.reaction}!", type="1", sender=instance.user, article=instance.content_object)
                 send_notification(recipient.id, notification)
-                print('article noti:', notification)
             elif resource_type=="comment":
                 notification = save_notification(user=recipient, message=f"Reacted to your comment: {instance.reaction}!", type="1", sender=instance.user, comment=instance.content_object)
                 send_notification(recipient.id, notification)
-                print('comment noti:', notification)
             elif resource_type=="poem":
                 notification = save_notification(user=recipient, message=f"Reacted to your poem: {instance.reaction}!", type="1", sender=instance.user, poem=instance.content_object)
                 send_notification(recipient.id, notification)
-                print('poem noti:', notification)
             elif resource_type=="post":
                 notification = save_notification(user=recipient, message=f"Reacted to your post: {instance.reaction}!", type="1", sender=instance.user, post=instance.content_object)
                 send_notification(recipient.id, notification)
-                print('post noti:', notification)
             else:
                 notification = save_notification(user=recipient, message=f"Reacted to your saying: {instance.reaction}!", type="1", sender=instance.user, saying=instance.content_object)
                 send_notification(recipient.id, notification)
-                print('saying noti:', notification)
