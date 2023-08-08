@@ -282,7 +282,6 @@ def save_notification(user, message, type="7", sender=None, post=None, article=N
 def send_notification(user_id, object, type="notify"):
     '''
     Send a realtime notification message to the specific user's channel group
-    for now this will only handle notifications from the Notifications instance
     '''
     async_to_sync(channel_layer.group_send)(
         f'notification_{str(user_id)}', {"type": type, "object": object})

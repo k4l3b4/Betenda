@@ -11,6 +11,7 @@ class Admin(admin.ModelAdmin):
         "id",
         "user",
         "reaction",
+        "content_type",
         "created_at",
         )
     

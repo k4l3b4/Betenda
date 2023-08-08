@@ -90,7 +90,7 @@ class WordSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class Poem_CUD_Serializer(serializers.ModelSerializer):
+class Poem_LCU_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Poem
         fields = [
@@ -100,6 +100,10 @@ class Poem_CUD_Serializer(serializers.ModelSerializer):
             'adult',
             'language',
         ]
+        extra_kwargs = {
+            'id': {'read_only':True},
+            'language': {'read_only':True},
+        }
 
     def create(self, validated_data):
         return super().create(validated_data)

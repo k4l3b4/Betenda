@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     'django_user_agents',
     'django_extensions',
     'debug_toolbar',
+    'django.contrib.postgres',
+    'django_seed',
 ]
 
 ASGI_APPLICATION = 'betenda_api.asgi.application'
@@ -100,6 +102,13 @@ CHANNEL_LAYERS = {
     "default": {
         # Don't use this in production
         "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'fgh5675yhj56ugj',
     }
 }
 
@@ -224,7 +233,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 # replace with your acuall url
-MEDIA_URL = 'http://localhost:8000/media/'
+MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

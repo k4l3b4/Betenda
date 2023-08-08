@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext as _
+from django.contrib.contenttypes.fields import GenericRelation
 
 
 class HashTag(models.Model):
@@ -9,6 +10,7 @@ class HashTag(models.Model):
     tag = models.CharField(_("tag"), max_length=255, blank=False, null=True)
     created_date = models.DateTimeField(
         _("Created date"), auto_now=False, auto_now_add=True)
+    report = GenericRelation("Reports.Report")
 
     def __str__(self):
         return f"{self.tag}"

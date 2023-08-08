@@ -1,15 +1,18 @@
 from Articles.models import Article
-from Contributions.models import Poem
 from Comments.models import Comment
-from Users.models import User
-from HashTags.models import HashTag
-from Reports.serializers import Report_GET_Serializer, Report_Create_Serializer
-from betenda_api.pagination import StandardResultsSetPagination
-from betenda_api.methods import BadRequest
-from betenda_api.methods import BadRequest, ResourceNotFound, send_response, validate_key_value
-from Reports.models import Report
-from rest_framework import generics
+from Contributions.models import Poem
 from django.contrib.contenttypes.models import ContentType
+from HashTags.models import HashTag
+from Posts.models import Post
+from Reports.models import Report
+from Reports.serializers import Report_Create_Serializer, Report_GET_Serializer
+from rest_framework import generics
+from Users.models import User
+
+from betenda_api.methods import (BadRequest, ResourceNotFound, send_response,
+                                 validate_key_value)
+from betenda_api.pagination import StandardResultsSetPagination
+
 
 # Create your views here.
 class Report_Create_View(generics.CreateAPIView):
@@ -30,6 +33,7 @@ class Report_Create_View(generics.CreateAPIView):
         resource_type_mapping = {
             "article": Article,
             "comment": Comment,
+            "post": Post,
             "poem": Poem,
             "user": User,
             "hashtag": HashTag,

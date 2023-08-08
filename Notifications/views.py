@@ -29,8 +29,8 @@ class Notification_GET_View(generics.ListAPIView):
                 #     '7': 0,
                 # }
 
-                # then replace the addition logic in the for loop with this:
-                #  unread_count[notification.message_type] += 1
+                # then replace the addition logic in the for loop above with this:
+                # unread_count[notification.message_type] += 1
 
 
     def get(self, request, *args, **kwargs):

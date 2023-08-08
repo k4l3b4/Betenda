@@ -1,5 +1,5 @@
 from django.urls import path
-from Posts.views import Post_CUD_View, Post_List_GET_View
+from Posts.views import Post_CUD_View, Post_List_GET_View, Post_Search_View 
 
 
 urlpatterns = [
@@ -16,4 +16,6 @@ urlpatterns = [
         {'get': 'get_post_replies'}), name="get_replies_by_parent_id"),
     path('post', Post_CUD_View.as_view(),
          name="post_create_update_delete_view"),
+    path('search', Post_Search_View.as_view(),
+         name="post_search_view"),
 ]
