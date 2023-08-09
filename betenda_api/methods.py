@@ -279,17 +279,19 @@ def save_notification(user, message, type="7", sender=None, post=None, article=N
     return notification
 
 
-def send_notification(user_id, object, type="notify"):
+def send_notification(user_id, object, request,  type="notify"):
     '''
     Send a realtime notification message to the specific user's channel group
     '''
+    # passing the request because self.scope won't help us construct absolute urls
     async_to_sync(channel_layer.group_send)(
-        f'notification_{str(user_id)}', {"type": type, "object": object})
+        f'notification_{str(user_id)}', {"type": type, "object": object, "request": request})
 
 
 
 def mark_notification_as_read(notification_ids):
-    Notification.objects.filter(id__in=notification_ids).update(is_read=True)
+    updated_count = Notification.objects.filter(id__in=notification_ids).update(is_read=True)
+    return updated_count
 
 
 def normalize_emoji(emoji):
