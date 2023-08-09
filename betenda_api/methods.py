@@ -116,7 +116,7 @@ class ErrorType(Enum):
     NOT_FOUND = When the requested data is not found \n
     USELESS_REQUEST = When a request to the API is useless, ie trying to verify an email after it has already been verified \n 
     SERVER_ERROR = When there is a server error \n
-    PAYMENT_REQUIRED = When the user i.e the school owner is behind on payments \n
+    PAYMENT_REQUIRED = Optional if you may need/want to charge the community for certain features \n
     UNKNOWN_ERROR = When there is an error that doesn't have a known type \n
     """
     VERSION_ERROR = 'Version_Error'
@@ -141,7 +141,7 @@ class ErrorType(Enum):
     """
     METHOD_NOT_ALLOWED = 'Method_Not_Allowed'
     """
-    When the data that is sent over is not correct
+    Https request method isn't allowed
     """
     NOT_FOUND = 'Resource_Not_Found'
     """
@@ -157,7 +157,7 @@ class ErrorType(Enum):
     """
     PAYMENT_REQUIRED = 'Payment_Required'
     """
-    When the user i.e the school owner is behind on payments
+    Optional if you may need/want to charge the community for certain features
     """
     UNKNOWN_ERROR = 'Unknown_Error'
     """
@@ -167,7 +167,7 @@ class ErrorType(Enum):
 
 def send_error(err_type: ErrorType, err: str | dict, code: int = 400):
     """
-    takes an err_type(ErrorType["VERSION_ERROR", "PERMISSION_ERROR", "UNAUTHENTICATED", "UNAUTHORIZED", "BAD_REQUEST", "USELESS_REQUEST", "SERVER_ERROR", "PAYMENT_REQUIRED", "UNKNOWN_ERROR",
+    takes an err_type(ErrorType["VERSION_ERROR", "PERMISSION_DENIED", "UNAUTHENTICATED", "UNAUTHORIZED", "BAD_REQUEST", "METHOD_NOT_ALLOWED", "NOT_FOUND", "USELESS_REQUEST", "SERVER_ERROR", "PAYMENT_REQUIRED", "UNKNOWN_ERROR",
     ]), err(string or dict) and code(int) to send a JsonResponse Error with the format of:\n
     {
         "type": err_type,\n
@@ -285,6 +285,11 @@ def send_notification(user_id, object, type="notify"):
     '''
     async_to_sync(channel_layer.group_send)(
         f'notification_{str(user_id)}', {"type": type, "object": object})
+
+
+
+def mark_notification_as_read(notification_ids):
+    Notification.objects.filter(id__in=notification_ids).update(is_read=True)
 
 
 def normalize_emoji(emoji):
