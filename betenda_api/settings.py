@@ -91,9 +91,9 @@ MIDDLEWARE = [
     'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
-INTERNAL_IPS = [
-    '*',
-]
+# INTERNAL_IPS = [
+#     '*',
+# ]
 
 ROOT_URLCONF = 'betenda_api.urls'
 
@@ -105,12 +105,12 @@ CHANNEL_LAYERS = {
     }
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'fgh5675yhj56ugj',
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': 'fgh5675yhj56ugj',
+#     }
+# }
 
 
 TEMPLATES = [
@@ -243,7 +243,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SESSION_COOKIE_DOMAIN = 'localhost'
+# SESSION_COOKIE_DOMAIN = 'localhost'
 
 SESSION_COOKIE_SAMESITE = None
 
