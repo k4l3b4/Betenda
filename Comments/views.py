@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from Contributions.models import Poem, Saying
+from .notify import comment_notification
 from rest_framework.decorators import action
 from rest_framework import generics, viewsets
 from .models import Comment
@@ -48,6 +49,7 @@ class Comment_CUD_View(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.save(content_object=instance, user=user,
                             content_type=content_type)
+            comment_notification(serializer.instance, request)
             return send_response(serializer.data, "Commented successfully", 201)
         raise BadRequest(serializer.errors)
     
@@ -95,6 +97,7 @@ class Comment_CUD_View(viewsets.ModelViewSet):
                             content_type=content_type, parent=top_comment, immediate_parent=parent_comment)
             # reformat the returned data to fit in the frontend
             return_serializer = Comment_GET_Serializer(serializer.instance, context = {'request': request})
+            comment_notification(serializer.instance, request)
             return send_response(return_serializer.data, "Replied successfully", 201)
         raise BadRequest(serializer.errors)
     
