@@ -279,14 +279,19 @@ def save_notification(user, message, type="7", sender=None, post=None, article=N
     return notification
 
 
-def send_notification(user_id, object, request,  type="notify"):
+def send_notification(user_id, object, request=None,  type="notify"):
+    # preventing circular import error
+    from Notifications.serializers import NotificationSerializer
     '''
     Send a realtime notification message to the specific user's channel group
     '''
     # passing the request because self.scope won't help us construct absolute urls
+    if request:
+        serializer = NotificationSerializer(object, context={'request': request })
+    else:
+        serializer = NotificationSerializer(object)
     async_to_sync(channel_layer.group_send)(
-        f'notification_{str(user_id)}', {"type": type, "object": object, "request": request})
-
+        f'notification_{str(user_id)}', {"type": type, "object": serializer.data})
 
 
 def mark_notification_as_read(notification_ids):
