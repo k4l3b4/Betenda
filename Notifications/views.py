@@ -1,5 +1,7 @@
-from rest_framework import generics
-from betenda_api.methods import ServerError
+from betenda_api.methods import send_response
+from rest_framework.decorators import action
+from betenda_api.methods import mark_notification_as_read
+from rest_framework import viewsets
 from betenda_api.pagination import StandardResultsSetPagination
 from .serializers import NotificationSerializer
 from .models import Notification
@@ -7,7 +9,7 @@ from .models import Notification
 # Create your views here.
 
 
-class Notification_GET_View(generics.ListAPIView):
+class Notification_GR_View(viewsets.ModelViewSet):
     queryset = Notification.objects.all().select_related('user')
     serializer_class = NotificationSerializer
 
@@ -31,8 +33,9 @@ class Notification_GET_View(generics.ListAPIView):
 
                 # then replace the addition logic in the for loop above with this:
                 # unread_count[notification.message_type] += 1
+                # i'd rather not do that
 
-
+    @action(detail=True, methods=['get'])
     def get(self, request, *args, **kwargs):
         user = request.user
         notifications = self.queryset.filter(user=user)
@@ -51,3 +54,12 @@ class Notification_GET_View(generics.ListAPIView):
         }
 
         return pagination_class.get_paginated_response(response_data)
+    
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, *args, **kwargs):
+        ids_string = request.data.get('ids', None)
+        ids = [int(id_str) for id_str in ids_string.split(',')]
+        # Since our frontend is handling the updating optimistically 
+        # there will be little use in returning an error if some notifications aren't marked as read
+        mark_notification_as_read(ids)
+        return send_response(None, "Notifications read successfully")
