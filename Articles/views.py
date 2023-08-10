@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, filters
 from rest_framework.views import APIView
 from django.db.models import Count
 from betenda_api.methods import (BadRequest, PermissionDenied,
@@ -151,3 +151,14 @@ class Article_CUD_View(APIView):
             instance.delete()
             return send_response(None, "Article deleted successfully")
         raise PermissionDenied("You don't have permission for this action")
+
+
+
+class Article_Search_View(generics.ListAPIView):
+    '''
+    Search filter
+    '''
+    queryset = Article.objects.filter(status="PUBLISHED").prefetch_related('reactions')
+    serializer_class  = ArticleGetSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['@title', '@desc', '^hashtags__tag', '=hashtags__tag', 'authors__first_name', 'authors__last_name', 'authors__user_name']
