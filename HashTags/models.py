@@ -25,12 +25,17 @@ class UserHashtag(models.Model):
     Tags a user has subscribed to
     '''
     user = models.ForeignKey("Users.User", on_delete=models.CASCADE)
-    hashtag = models.ForeignKey(HashTag, on_delete=models.CASCADE)
-    score = models.IntegerField()
-    subscribed_at = models.DateTimeField(auto_now_add=True)
+    hashtag = models.OneToOneField('HashTag', related_name="user_tag", on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+    subscribed_at = models.DateTimeField(auto_now_add=True, auto_now=False)
+    updated_at = models.DateTimeField(auto_now_add=False, auto_now=True)
 
     def __str__(self):
         return f"{self.user.user_name}: {self.hashtag} {self.score}"
+    
+    class Meta:
+        verbose_name = _("User hashtag")
+        verbose_name_plural = _("User hashtags")
 
 class Engagement(models.Model):
     '''
