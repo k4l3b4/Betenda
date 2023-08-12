@@ -10,8 +10,46 @@ from Reactions.models import Reaction, ReactionCount
 from django.contrib.contenttypes.models import ContentType
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from PIL import Image
+import cv2
+import os
 
 channel_layer = get_channel_layer()
+
+def generate_video_thumbnail(video_path, thumbnail_path, frame_number=0):
+    try:
+        # Open the video file
+        cap = cv2.VideoCapture(video_path)
+        success, frame = cap.read()
+        
+        # Extract the specified frame (default is the first frame)
+        if frame_number > 0:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+            success, frame = cap.read()
+
+        # Save the extracted frame as the thumbnail
+        if success:
+            cv2.imwrite(thumbnail_path, frame)
+            return True
+        else:
+            return False
+    except Exception as e:
+        print("Error generating video thumbnail:", str(e))
+        return False
+
+
+
+
+
+def generate_thumbnail(video_path, thumbnail_path, size=(120, 90)):
+    try:
+        video = Image.open(video_path)
+        video.thumbnail(size)
+        video.save(thumbnail_path, "JPEG")
+        return True
+    except Exception as e:
+        return False
+
 
 
 class UnAuthenticated(APIException):
@@ -224,8 +262,12 @@ def validate_key_value(data=None, name: str | None = None, raise_exception=True)
     else if the raise_exception is True(default) it will raise a BadRequest exception with the {name} attr
     else it will return False
     '''
-    if data and data != "":
+    if data is not None and data != "":
         return True
+    if data == 'undefined':
+        if raise_exception:
+            raise BadRequest(f"Unexpected {name} type")
+        return False
     if raise_exception:
         raise BadRequest(f"Needed information was not included: {name}")
     return False
