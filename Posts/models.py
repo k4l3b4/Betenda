@@ -5,9 +5,12 @@ from filemime import filemime
 from django_extensions.db.fields import RandomCharField
 from django.contrib.contenttypes.fields import GenericRelation
 from HashTags.models import HashTag
-
+from django.dispatch import receiver
 
 class Post(models.Model):
+    allowed_image_types = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    allowed_video_types = ['video/mp4', 'video/mkv']
+
     class TYPE(models.TextChoices):
         IMAGE = "IMAGE", "Image"
         VIDEO = "VIDEO", "Video"
@@ -19,7 +22,7 @@ class Post(models.Model):
     parent = models.ForeignKey('self', verbose_name=_(
         "Replied to"), related_name="post_parent", on_delete=models.CASCADE, null=True, blank=True)
     slug = RandomCharField(
-        _("Invitation code"), length=15, unique=True)
+        _("Slug"), length=20, unique=True, include_alpha=False)
     media = models.FileField(_("Media"), upload_to='post/media/',
                              max_length=None, blank=True, null=True)
     hashtags = models.ManyToManyField(
@@ -36,45 +39,45 @@ class Post(models.Model):
         return f"{self.user.user_name}: {self.content}"
 
     def save(self, *args, **kwargs):
+        self.process_media_type()
         super().save(*args, **kwargs)
         self.process_hashtags()
-        self.process_media_type()
 
     def process_hashtags(self):
         existing_hashtags = self.hashtags.all()
-
         # Extract hashtags from content
         hashtags = re.findall(r'#\w+', self.content)
-
         # Remove the '#' symbol from the tag
         for tag_text in hashtags:
             tag_name = tag_text[1:]
-
-            # Check if the tag already exists
             existing_tag = existing_hashtags.filter(tag=tag_name).first()
-
             if not existing_tag:
-                # Get or create the hashtag
                 hashtag, _ = HashTag.objects.get_or_create(tag=tag_name)
-
-                # Associate the hashtag with the post
                 self.hashtags.add(hashtag)
 
     def process_media_type(self):
         if self.media:
-            # Determine the file type using python-magic library
-            fileObj = filemime()
-            file_type = fileObj.load_file(
-                self.media.file.read(), mimeType=True)
-            if file_type:
-                # Set the media_type field based on the file type
-                if file_type.startswith("image"):
-                    self.media_type = self.TYPE.IMAGE
-                elif file_type.startswith("video"):
-                    self.media_type = self.TYPE.VIDEO
-                elif file_type.startswith("audio"):
-                    self.media_type = self.TYPE.AUDIO
-                self.save()
+            read_size = 5 * (1024 * 1024)
+
+            from magic import from_buffer
+
+            mime = from_buffer(self.media.read(read_size), mime=True)
+            print("mime:", mime)
+
+            if mime in self.allowed_image_types:
+                self.media_type = self.TYPE.IMAGE
+            elif mime in self.allowed_video_types:
+                self.media_type = self.TYPE.VIDEO
+        
+    @receiver(models.signals.pre_save, sender="Posts.Post")
+    def server_delete_files(sender, instance, **kwargs):
+        if instance.id is not None:
+            for field in instance._meta.fields:
+                if field.name == "media":
+                    file = getattr(instance, field.name)
+                    if file:
+                        file.delete(save=False)
+
 
     class Meta:
         verbose_name = _("Post")
