@@ -1,7 +1,6 @@
-from random import sample
 from django.contrib.auth import login
+from django.db import models
 from django.db.models import F, Q
-from django.middleware import csrf
 from rest_framework import generics, viewsets
 from rest_framework.authentication import authenticate
 from rest_framework.decorators import action
@@ -12,14 +11,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from Users.models import FollowerRequest, Invitation, User, UserProfile
 from Users.serializers import User_SIMPLE_Serializer
 from Users.serializers import (FollowerRequestSerializer, LoginSerializer,
-                               User_CUD_Serializer, User_GET_Serializer,
-                               UserProfileSerializer)
+                               User_CUD_Serializer, User_GET_Serializer)
 from betenda_api.methods import (BadRequest, PermissionDenied,
                                  ResourceNotFound, ServerError,
                                  UnAuthenticated, UselessRequest,
                                  save_notification, send_notification,
                                  send_response, validate_key_value, send_error, ErrorType)
-
 # Create your views here.
 
 class UserCreateView(generics.CreateAPIView):
@@ -35,19 +32,19 @@ class UserCreateView(generics.CreateAPIView):
                 "You are not authorized to register an account")
 
         # Just in case the invitation instance wasn't deleted for some reason
-
-        if invite.count < 10:
-            serializer = User_CUD_Serializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(invited_by=invite.user)
-                invite.count = invite.count + 1
+        invited_by = invite.user if invite else None
+        serializer = User_CUD_Serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(invited_by=invited_by)
+            if invite:
+                if invite.count < 10:
+                    invite.count = F('count') - 1
+                    invite.save(update_fields=['count'])
+                else:
+                    invite.expired = True
                 invite.save()
-                return send_response(serializer.data, "Account registered successfully")
-            raise BadRequest(serializer.errors)
-        invite.expired = True
-        invite.save()
-        raise PermissionDenied(
-            "Oops.. the invitation code has expired, guess someone beat you to it.")
+            return send_response(serializer.data, "Account registered successfully")
+        raise BadRequest(serializer.errors)
 
 
 # class LoginView(TokenObtainPairView):
@@ -69,7 +66,6 @@ class LoginView(APIView):
 
     def post(self, request, format=None):
         data = request.data
-        response = Response()
         email = data.get('email', None)
         password = data.get('password', None)
         user = authenticate(email=email, password=password)
@@ -98,7 +94,7 @@ class AuthorSearchView(generics.ListAPIView):
     
 class CurrentUserView(viewsets.ModelViewSet):
     queryset = User.objects.filter(is_active=True)
-    serializer_class = User_CUD_Serializer
+    serializer_class = User_GET_Serializer
 
     @action(detail=True, methods=['get'])
     def get_current_user(self, request):
@@ -107,7 +103,6 @@ class CurrentUserView(viewsets.ModelViewSet):
         """
         user_instance = self.queryset.filter(
             pk=request.user.id).select_related('userprofile').first()
-        # user_instance = self.get_object().select_related('userprofile')
         serializer = self.serializer_class(
             user_instance, context={'request': request})
         return send_response(serializer.data, "Self retrieved successfully")
@@ -120,7 +115,7 @@ class CurrentUserView(viewsets.ModelViewSet):
         """
         user = request.user
         data = request.data
-        serializer = User_GET_Serializer(instance=user, data=data, partial=True)
+        serializer = User_CUD_Serializer(instance=user, data=data, partial=True)
         if not serializer.is_valid():
             raise BadRequest(serializer.errors)
         serializer.save()
@@ -150,39 +145,47 @@ class CurrentUserView(viewsets.ModelViewSet):
             return send_response(serializer.data, f"{user.first_name} retrieved successfully")
         raise ResourceNotFound("User not found")
     
+    @action(detail=True, methods=['get'])
+    def get_top_accounts(self, request, *args, **kwargs):
+        top_accounts = User.objects.annotate(followers_count=models.F('userprofile__followers_count')).order_by('-followers_count')[:5]        
+        serializer = User_GET_Serializer(top_accounts, many=True, context={'request': request})
+        return send_response(serializer.data, "top accounts retrieved successfully")
+    
     @action(detail=False, methods=['get'])
     def mutual_friends_following(self, request):
-        current_user_profile = request.user.user_profile
+        current_user_profile = request.user.userprofile
         current_user_friends = current_user_profile.get_friends()
 
-        friends_following = User.objects.filter(user_profile__followers=request.user)
+        friends_following = User.objects.filter(userprofile__followers=request.user)
 
-        mutual_friends_following = friends_following.filter(user_profile__following__in=current_user_friends).distinct()
+        mutual_friends_following = friends_following.filter(userprofile__following__in=current_user_friends).distinct()[:20]
 
         serializer = User_GET_Serializer(mutual_friends_following, many=True)
-        return Response(serializer.data)
-
+        return send_response(serializer.data, "Mutual friends retrieved successfully")
 
 
 class UserProfileFollowAPIView(viewsets.ModelViewSet):
-    queryset = UserProfile.objects.all().select_related('user')
-    serializer_class = UserProfileSerializer
+    queryset = UserProfile.objects.filter(user__is_active=True).select_related('user')
+    serializer_class = User_GET_Serializer
 
     @action(detail=True, methods=['post'])
     def follow(self, request, pk=None):
         '''
         follow the user that was requested
         '''
+        user = request.user
+        if pk == user.id:
+            # Raise an exception if the user is trying to follow them selves
+            # NOTE: there should be no way to do this in the frontend but there is no such thing as being to secure so...
+            raise UselessRequest("Trying to follow your self isn't allowed😂")
+        
         try:
             user_profile = self.queryset.get(user_id=pk)
         except:
             raise ResourceNotFound("User was not found")
         
-        user = request.user
-        if user_profile.user_id == user.id:
-            # Raise an exception if the user is trying to follow them selves
-            # NOTE: there should be no way to do this in the frontend but there is no such thing as being to secure so...
-            raise UselessRequest("Trying to follow your self isn't allowed😂")
+        serializer = self.serializer_class(user_profile.user, context={'request': request})
+
         already_following = None
         try:
             already_following = user_profile.followers.get(id=user.id)
@@ -191,7 +194,7 @@ class UserProfileFollowAPIView(viewsets.ModelViewSet):
 
         if already_following:
             raise UselessRequest(
-                f'You are already following {user_profile.user.first_name}!')
+                f'You are already following this user')
 
         if not user_profile.is_private:
             # If the user profile is not private, add the follower directly
@@ -206,8 +209,9 @@ class UserProfileFollowAPIView(viewsets.ModelViewSet):
 
             notification = save_notification(
                 user=user_profile.user, sender=request.user, type="2", message="Has started following you!")
-            send_notification(user_profile.user_id, notification)
-            return send_response(None, f'You are now following {user_profile.user.first_name}!')
+            
+            send_notification(user_profile.user_id, notification, request)
+            return send_response(serializer.data, f'You are now following this user!')
 
         # If the user profile is private, create a follower request
         follower_request, created = FollowerRequest.objects.get_or_create(
@@ -219,7 +223,7 @@ class UserProfileFollowAPIView(viewsets.ModelViewSet):
         if created:
             notification = save_notification(
                 user=user_profile.user, sender=request.user, type="2", message="Has requested to following you!")
-            send_notification(user_profile.user_id, notification)
+            send_notification(user_profile.user_id, notification, request)
             return send_response(None, 'Your request to follow this user has been sent.')
         else:
             follower_request.delete()
@@ -228,18 +232,34 @@ class UserProfileFollowAPIView(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def unfollow(self, request, pk=None):
+        '''
+        unfollow the user that was requested
+        '''
         user = request.user
-        try:
-            user_profile = self.queryset.get(user_id=pk)
-        except:
-            raise ResourceNotFound("User Profile was not found")
-        if user_profile.user_id == user.id:
+
+        if pk == user.id:
             # Raise an exception if the user is trying to unfollow them selves
             # NOTE: there should be no way to do this in the frontend but there is no such thing as being to secure so...
             raise UselessRequest("Trying to unfollow your self isn't allowed😂")
+        
+        try:
+            user_profile = self.queryset.get(user_id=pk)
+        except:
+            raise ResourceNotFound("User was not found")
+        
+        ser_user = User.objects.get(id=user_profile.user_id)
 
-        followers = user_profile.followers.all()
-        if not followers.filter(pk=user.pk).exists():
+        
+        serializer = self.serializer_class(ser_user, context={'request': request})
+
+        
+        not_following = None
+        try:
+            not_following = user_profile.followers.get(id=user.id)
+        except:
+            pass
+
+        if not not_following:
             raise ResourceNotFound("You are not following this user")
 
         if user_profile.followers_count > 0:
@@ -253,21 +273,30 @@ class UserProfileFollowAPIView(viewsets.ModelViewSet):
             user.userprofile.save(update_fields=['following_count'])
 
         user.userprofile.following.remove(user_profile.user)
-
-        return send_response(None, f'You have unfollowed {user_profile.user.first_name}')
+        return send_response(serializer.data, f'You have unfollowed this user!')
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
         user = request.user
+
+        if pk == user.id:
+            # Raise an exception if the user is trying to unfollow them selves
+            # NOTE: there should be no way to do this in the frontend but there is no such thing as being to secure so...
+            raise UselessRequest("Trying to accept a non existent follow request from user self😂")
+
         try:
             user_profile = self.queryset.get(user=user)
         except:
             raise ResourceNotFound("User was not found")
+
         try:
             follow_request = FollowerRequest.objects.get(
                 user_profile=user_profile, follower_id=pk, is_approved=False)
         except:
-            raise ResourceNotFound("Request was not found")
+            raise ResourceNotFound("Follow request was not found")
+        
+        serializer = self.serializer_class(follow_request.follower, context={'request': request})
+
         try:
             follow_request.follower.userprofile.following_count += 1
             follow_request.follower.userprofile.save()
@@ -282,11 +311,11 @@ class UserProfileFollowAPIView(viewsets.ModelViewSet):
             notification = save_notification(
                 user=follow_request.follower, type="2", message="Has accepted your follow request!")
             send_notification(
-                follow_request.follower_id, notification)
+                follow_request.follower_id, notification, request)
 
             follow_request.is_approved = True
             follow_request.save()
-            return send_response(None, f"You have accepted {follow_request.follower.first_name}'s request to follow you!")
+            return send_response(serializer.data, f"You have accepted this users follow request!")
         except:
             raise ServerError(
                 "An error occurred on our side.")
