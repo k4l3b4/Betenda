@@ -13,12 +13,12 @@ class Notification(models.Model):
             ("7", 'System')
         )
     
-    sender = models.ForeignKey('Users.User', verbose_name=_("Sender"), on_delete=models.CASCADE, related_name='from_user', blank=True, null=True)
-    user = models.ForeignKey('Users.User', verbose_name=_("Recipient"), on_delete=models.CASCADE, related_name='to_user')
-    post = models.ForeignKey('Posts.Post', on_delete=models.CASCADE, related_name='notifiable_post', blank=True, null=True)
-    article = models.ForeignKey('Articles.Article', on_delete=models.CASCADE, related_name='notifiable_article', blank=True, null=True)
-    poem = models.ForeignKey('Contributions.Poem', on_delete=models.CASCADE, related_name='notifiable_article', blank=True, null=True)
-    comment = models.ForeignKey('Comments.Comment', on_delete=models.CASCADE, related_name='notifiable_article', blank=True, null=True)
+    sender = models.ForeignKey('Users.User', verbose_name=_("Sender"), related_name='from_user', blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey('Users.User', verbose_name=_("Recipient"), related_name='to_user', on_delete=models.CASCADE)
+    post = models.ForeignKey('Posts.Post', related_name='notifiable_post', blank=True, null=True, on_delete=models.SET_NULL)
+    article = models.ForeignKey('Articles.Article', related_name='notifiable_article', blank=True, null=True, on_delete=models.SET_NULL)
+    poem = models.ForeignKey('Contributions.Poem', related_name='notifiable_article', blank=True, null=True, on_delete=models.SET_NULL)
+    comment = models.ForeignKey('Comments.Comment', related_name='notifiable_article', blank=True, null=True, on_delete=models.SET_NULL)
     message = models.TextField(_("Message"))
     message_type = models.CharField(
         _("Message type"), choices=TYPES, default="7", max_length=50)

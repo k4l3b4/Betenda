@@ -19,7 +19,6 @@ class HashTag(models.Model):
         verbose_name = _("HashTag")
         verbose_name_plural = _("HashTags")
 
-
 class UserHashtag(models.Model):
     '''
     Tags a user has subscribed to
@@ -45,7 +44,8 @@ class Engagement(models.Model):
         "Hashtag"), on_delete=models.PROTECT, blank=False, null=True)
     date = models.DateTimeField(
         _("Created date"), auto_now=False, auto_now_add=True)
-    duration = models.DurationField(_("Duration"), blank=True, null=True)
+    frequency = models.DecimalField(
+        _("Interaction amount"), default=0.01, decimal_places=2, max_digits=3, blank=False, null=True)
     int_amount = models.PositiveIntegerField(
         _("Interaction amount"), default=0, blank=False, null=True)
     
