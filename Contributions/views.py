@@ -1,8 +1,9 @@
+from betenda_api.pagination import StandardResultsSetPagination
+from rest_framework import generics
 from rest_framework.views import APIView
-from betenda_api.methods import ServerError
-from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, check_user_permissions, send_response, validate_key_value
+from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, ServerError, check_user_permissions, send_response, validate_key_value
 from .models import Poem, Saying, Sentence, Language, Word
-from .serializers import Poem_CUD_Serializer, SayingSerializer, SentenceSerializer, LanguageSerializer, WordSerializer
+from .serializers import Poem_LCU_Serializer, SayingSerializer, SentenceSerializer, LanguageSerializer, WordSerializer
 
 
 class Language_CUD_APIView(APIView):
@@ -84,24 +85,25 @@ class Language_CUD_APIView(APIView):
 
 
 
-class Word_CUD_APIView(APIView):
+class Word_CU_APIView(APIView):
     # setting level authentication class set so no need to set here
     queryset = Word.objects.all()
     serializer_class = WordSerializer
 
     def post(self, request, *args, **kwargs):
         try:
+            perms = ['Contributions.add_word']
             user = request.user
             mutable_data = request.data.copy()
             mutable_data['synonym'] = [int(x) if x else None for x in mutable_data['synonym'] if x.strip()]
             mutable_data['antonym'] = [int(x) if x else None for x in mutable_data['antonym'] if x.strip()]
-
-            print(mutable_data)
-            serializer = self.serializer_class(data=mutable_data)
-            if not serializer.is_valid():
-                raise BadRequest(serializer.errors)
-            serializer.save(user=user)
-            return send_response("Word added successfully", 201)
+            if check_user_permissions(user=user, groups=None, perms=perms):
+                serializer = self.serializer_class(data=mutable_data)
+                if not serializer.is_valid():
+                    raise BadRequest(serializer.errors)
+                serializer.save(user=user)
+                return send_response("Word added successfully", 201)
+            raise PermissionDenied("You don't have permission for this action")
         except:
           return ServerError("There was an error on our side")
 
@@ -133,20 +135,35 @@ class Word_CUD_APIView(APIView):
           return ServerError("There was an error on our side")
 
 
-class Poem_CUD_APIView(APIView):
+class Poem_GCU_APIView(APIView):
     # setting level authentication class set so no need to set here
     queryset = Poem.objects.all()
-    serializer_class = Poem_CUD_Serializer
+    serializer_class = Poem_LCU_Serializer
+
+    def get(self, request, slug, *args, **kwargs):
+        if not slug:
+            raise BadRequest("Needed information was not included: slug")
+        
+        try:
+          poem = self.queryset.get(slug=slug)
+        except:
+          raise ResourceNotFound("The poem was not found")
+        
+        serializer = self.serializer_class(poem)
+        return send_response(serializer.data, "Poem retrieved successfully", 200)
 
     def post(self, request, *args, **kwargs):
         try:
+            perms = ['Contributions.add_poem']
             user = request.user
 
-            serializer = self.serializer_class(data=request.data)
-            if not serializer.is_valid():
-                raise BadRequest(serializer.errors)
-            serializer.save(user=user)
-            return send_response("Poem added successfully", 201)
+            if check_user_permissions(user=user, groups=None, perms=perms):
+                serializer = self.serializer_class(data=request.data)
+                if not serializer.is_valid():
+                    raise BadRequest(serializer.errors)
+                serializer.save(user=user)
+                return send_response("Poem added successfully", 201)
+            raise PermissionDenied("You don't have permission for this action")
         except:
           return ServerError("There was an error on our side")
 
@@ -179,20 +196,23 @@ class Poem_CUD_APIView(APIView):
       
 
 
-class Saying_CUD_APIView(APIView):
+class Saying_CU_APIView(APIView):
     # setting level authentication class set so no need to set here
     queryset = Saying.objects.all()
     serializer_class = SayingSerializer
 
     def post(self, request, *args, **kwargs):
         try:
+            perms = ['Contributions.add_saying']
             user = request.user
 
-            serializer = self.serializer_class(data=request.data)
-            if not serializer.is_valid():
-                raise BadRequest(serializer.errors)
-            serializer.save(user=user)
-            return send_response("Saying added successfully", 201)
+            if check_user_permissions(user=user, groups=None, perms=perms):
+                serializer = self.serializer_class(data=request.data)
+                if not serializer.is_valid():
+                    raise BadRequest(serializer.errors)
+                serializer.save(user=user)
+                return send_response("Saying added successfully", 201)
+            raise PermissionDenied("You don't have permission for this action")
         except:
           return ServerError("There was an error on our side")
 
@@ -225,20 +245,22 @@ class Saying_CUD_APIView(APIView):
 
 
 
-class Sentence_CUD_APIView(APIView):
+class Sentence_CU_APIView(APIView):
     # setting level authentication class set so no need to set here
     queryset = Sentence.objects.all()
     serializer_class = SentenceSerializer
 
     def post(self, request, *args, **kwargs):
         try:
+            perms = ['Contributions.add_sentence']
             user = request.user
-
-            serializer = self.serializer_class(data=request.data)
-            if not serializer.is_valid():
-                raise BadRequest(serializer.errors)
-            serializer.save(user=user)
-            return send_response(serializer.data, "Sentence added successfully", 201)
+            if check_user_permissions(user=user, groups=None, perms=perms):
+                serializer = self.serializer_class(data=request.data)
+                if not serializer.is_valid():
+                    raise BadRequest(serializer.errors)
+                serializer.save(user=user)
+                return send_response(serializer.data, "Sentence added successfully", 201)
+            raise PermissionDenied("You don't have permission for this action")
         except:
           return ServerError("There was an error on our side")
 
@@ -269,3 +291,9 @@ class Sentence_CUD_APIView(APIView):
             return send_response(serializer.data, "Sentence updated successfully")
         except:
           return ServerError("There was an error on our side")
+
+
+class Poem_List_APIView(generics.ListAPIView):
+    queryset = Poem.objects.all()
+    serializer_class = Poem_LCU_Serializer
+    pagination_class = StandardResultsSetPagination
