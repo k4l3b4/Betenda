@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Engagement, HashTag
+from .models import Engagement, HashTag, UserHashtag
 
 # Register your models here.
 
@@ -13,12 +13,22 @@ class Admin(admin.ModelAdmin):
         "created_date",
     )
 
+
+@admin.register(UserHashtag)
+class Admin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "hashtag",
+        "score",
+        "subscribed_at",
+        "updated_at",
+    )
+
 @admin.register(Engagement)
 class Admin(admin.ModelAdmin):
     list_display = (
         "id",
         "tag",
         "date",
-        "duration",
         "int_amount",
     )
