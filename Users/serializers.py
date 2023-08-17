@@ -1,15 +1,14 @@
-from datetime import datetime, timedelta
-
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.validators import UniqueValidator
-from betenda_api.methods import BadRequest, UnAuthenticated, send_response
-from rest_framework.authentication import authenticate
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import FollowerRequest, Invitation, User, UserProfile
-from rest_framework import serializers
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from betenda_api.methods import (BadRequest,
+                                 check_requested_user_follows,
+                                 check_requesting_user_follows, 
+                                 check_request_to_be_followed, 
+                                 check_request_to_follow)
+from .models import FollowerRequest, Invitation, User, UserProfile
 
 
 def validate_terms(value):
@@ -18,7 +17,7 @@ def validate_terms(value):
             "You have to agree with the terms of service")
 
 
-class User_CUD_Serializer(serializers.ModelSerializer):
+class User_CD_Serializer(serializers.ModelSerializer):
     user_name = serializers.CharField(validators=[UnicodeUsernameValidator()])
     email = serializers.EmailField(
         required=True,
@@ -29,10 +28,10 @@ class User_CUD_Serializer(serializers.ModelSerializer):
         source='userprofile.followers_count', read_only=True)
     following_count = serializers.IntegerField(
         source='userprofile.following_count', read_only=True)
-    request_to_be_followed = serializers.SerializerMethodField(read_only=True)
-    request_to_follow = serializers.SerializerMethodField(read_only=True)
-    requested_user_follows = serializers.SerializerMethodField(read_only=True)
-    requesting_user_follows = serializers.SerializerMethodField(read_only=True)
+    request_to_be_followed = serializers.SerializerMethodField()
+    request_to_follow = serializers.SerializerMethodField()
+    requested_user_follows = serializers.SerializerMethodField()
+    requesting_user_follows = serializers.SerializerMethodField()
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -88,80 +87,19 @@ class User_CUD_Serializer(serializers.ModelSerializer):
 
     def get_request_to_be_followed(self, instance):
         # Check if the requesting user (if authenticated) follows the user
-        try:
-          requesting_user = self.context['request'].user
-        except:
-          return False
-        # if the user is requesting his own account return None
-        if instance != requesting_user:
-            try:
-                exists = FollowerRequest.objects.get(
-                    user_profile=requesting_user.userprofile,
-                    follower=instance,
-                    is_approved=False
-                )
-
-            except:
-                return False
-            if exists:
-                return True
-        return None
+        return check_request_to_be_followed(self, instance)
 
     def get_request_to_follow(self, instance):
         # Check if the requesting user (if authenticated) follows the user
-        try:
-          requesting_user = self.context['request'].user
-        except:
-          return False
-        # if the user is requesting his own account return None
-        if instance != requesting_user:
-            try:
-                exists = FollowerRequest.objects.get(
-                    user_profile=instance.userprofile,
-                    follower=requesting_user,
-                    is_approved=False
-                )
-            except:
-                return False
-
-            if exists:
-                return True
-        return None
+        return check_request_to_follow(self, instance)
 
     def get_requested_user_follows(self, instance):
         # Check if the requesting user (if authenticated) follows the user
-        try:
-          requesting_user = self.context['request'].user
-        except:
-          return False
-        # if the user is requesting his own account return None
-        if instance != requesting_user:
-            try:
-                exists = instance.userprofile.following.get(
-                    pk=requesting_user.pk)
-            except:
-                return False
-
-            if exists:
-                return True
-        return None
+        return check_requested_user_follows(self, instance)
 
     def get_requesting_user_follows(self, instance):
         # Check if the user (instance) follows the requesting user
-        try:
-          requesting_user = self.context['request'].user
-        except:
-          return False
-        # if the user is requesting his own account return None
-        if instance != requesting_user:
-            try:
-                exists = instance.userprofile.followers.get(
-                    pk=requesting_user.pk)
-            except:
-                return False
-            if exists:
-                return True
-        return None
+        return check_requesting_user_follows(self, instance)
 
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -188,48 +126,110 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    followed_by_requesting_user = serializers.SerializerMethodField()
-    follows_requesting_user = serializers.SerializerMethodField()
-    pending_follow_approval = serializers.SerializerMethodField()
+    followers_count = serializers.IntegerField(read_only=True)
+    following_count = serializers.IntegerField(read_only=True)
+    request_to_be_followed = serializers.SerializerMethodField()
+    request_to_follow = serializers.SerializerMethodField()
+    requested_user_follows = serializers.SerializerMethodField()
+    requesting_user_follows = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
-        fields = ('user', 'followed_by_requesting_user', 'follows_requesting_user',
-                  'pending_follow_approval')
+        fields = (
+                'user', 
+                'followers_count',
+                'following_count',
+                'request_to_be_followed',
+                'request_to_follow',
+                'requested_user_follows',
+                'requesting_user_follows',
+                )
 
-    def get_followed_by_requesting_user(self, obj):
-        requesting_user = self.context['request'].user
-        return obj.is_followed_by(requesting_user)
+    def get_request_to_be_followed(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        return check_request_to_be_followed(self, instance)
 
-    def get_follows_requesting_user(self, obj):
-        requesting_user = self.context['request'].user
-        return obj.is_following(requesting_user)
+    def get_request_to_follow(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        return check_request_to_follow(self, instance)
 
-    def get_pending_follow_approval(self, obj):
-        requesting_user = self.context['request'].user
-        requested_user = obj.user
-        try:
-            exists = FollowerRequest.objects.get(
-                user_profile=requested_user.userprofile, follower=requesting_user)
-        except:
-            return False
-        if exists:
-            return True
+    def get_requested_user_follows(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        return check_requested_user_follows(self, instance)
+
+    def get_requesting_user_follows(self, instance):
+        # Check if the user (instance) follows the requesting user
+        return check_requesting_user_follows(self, instance)
 
 
-class User_GET_Serializer(serializers.ModelSerializer):
-    userprofile = UserProfileSerializer()
+class PermissionSerializer(serializers.Serializer):
+    codename = serializers.CharField()
+    name = serializers.CharField()
+
+
+
+class User_GU_Serializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    followers_count = serializers.IntegerField(
+        source='userprofile.followers_count', read_only=True)
+    following_count = serializers.IntegerField(
+        source='userprofile.following_count', read_only=True)
+    is_private = serializers.BooleanField(
+        source='userprofile.is_private', read_only=True)
+    permissions = PermissionSerializer(many=True, read_only=True, source='user_permissions')
+    request_to_be_followed = serializers.SerializerMethodField()
+    request_to_follow = serializers.SerializerMethodField()
+    requested_user_follows = serializers.SerializerMethodField()
+    requesting_user_follows = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'user_name', 'email',
-                  'bio', 'profile_avatar', 'profile_cover', 'sex', 'birth_date', 'userprofile']
-
+        fields = ['id', 'first_name', 'last_name',
+                  'bio', 'user_name', 'profile_avatar',
+                  'sex',
+                  'request_to_be_followed',
+                  'request_to_follow',
+                  'birth_date',
+                  'permissions',
+                  'profile_cover',
+                  'verified',
+                  'followers_count', 'following_count',
+                  'is_private',
+                  'is_staff',
+                  'is_superuser',
+                  'requested_user_follows',
+                  'requesting_user_follows',
+                  'has_rated', 'is_active', 'joined_date', 'last_login',
+                  ]
         extra_kwargs = {
-            'id': {'read_only': True},
-            'userprofile': {'read_only': True},
-            'email': {'write_only': True},
+            'verified':{'read_only':True},
+            'has_rated':{'read_only':True},
+            'is_active':{'read_only':True},
+            'joined_date':{'read_only':True},
+            'last_login':{'read_only':True},
         }
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+
+    def get_request_to_be_followed(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        return check_request_to_be_followed(self, instance)
+
+    def get_request_to_follow(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        return check_request_to_follow(self, instance)
+
+    def get_requested_user_follows(self, instance):
+        # Check if the requesting user (if authenticated) follows the user
+        return check_requested_user_follows(self, instance)
+
+    def get_requesting_user_follows(self, instance):
+        # Check if the user (instance) follows the requesting user
+        return check_requesting_user_follows(self, instance)
+
+
+
 
 
 class FollowerRequestSerializer(serializers.ModelSerializer):
