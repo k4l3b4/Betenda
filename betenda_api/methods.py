@@ -39,8 +39,6 @@ def generate_video_thumbnail(video_path, thumbnail_path, frame_number=0):
 
 
 
-
-
 def generate_thumbnail(video_path, thumbnail_path, size=(120, 90)):
     try:
         video = Image.open(video_path)

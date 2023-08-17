@@ -20,6 +20,8 @@ class Article(models.Model):
     body = models.TextField(_("Article body"), blank=False)
     image = models.ImageField(
         _("Article image"), upload_to='article/images/', max_length=None, blank=True, null=True)
+    thumbnail = models.ImageField(
+        _("Image thumbnail"), upload_to='article/images/thumbnails/', max_length=None, blank=True, null=True)
     hashtags = models.ManyToManyField(
         "HashTags.HashTag", blank=True, db_index=True)
     authors = models.ManyToManyField("Users.User", verbose_name=_("Authors"), blank=True)
@@ -28,6 +30,7 @@ class Article(models.Model):
     published_date = models.DateTimeField(
         _("Published date"), auto_now=False, auto_now_add=True)
     report = GenericRelation("Reports.Report")
+    bookmark = GenericRelation("BookMarks.Bookmark")
     modified_date = models.DateTimeField(
         _("modified date"), auto_now=True, auto_now_add=False)
     reactions = GenericRelation("Reactions.Reaction")

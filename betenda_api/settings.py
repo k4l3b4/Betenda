@@ -66,11 +66,10 @@ INSTALLED_APPS = [
     'Reports.apps.ReportsConfig',
     'RoadMaps.apps.RoadmapsConfig',
     'Notifications.apps.NotificationsConfig',
-    'django_user_agents',
+    'BookMarks.apps.BookmarksConfig',
     'django_extensions',
     'debug_toolbar',
     'django.contrib.postgres',
-    'django_seed',
 ]
 
 ASGI_APPLICATION = 'betenda_api.asgi.application'
@@ -88,7 +87,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 # INTERNAL_IPS = [
@@ -243,9 +241,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# SESSION_COOKIE_DOMAIN = 'localhost'
-
-SESSION_COOKIE_SAMESITE = None
+# SESSION_COOKIE_DOMAIN = '*'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
@@ -273,4 +269,23 @@ SIMPLE_JWT = {
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
 
     'JTI_CLAIM': 'jti',
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'sql.log',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
