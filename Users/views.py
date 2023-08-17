@@ -5,23 +5,21 @@ from rest_framework import generics, viewsets
 from rest_framework.authentication import authenticate
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from Users.models import FollowerRequest, Invitation, User, UserProfile
 from Users.serializers import User_SIMPLE_Serializer
-from Users.serializers import (FollowerRequestSerializer, LoginSerializer,
-                               User_CUD_Serializer, User_GET_Serializer)
+from Users.serializers import (FollowerRequestSerializer, LoginSerializer,User_CD_Serializer, User_GU_Serializer)
 from betenda_api.methods import (BadRequest, PermissionDenied,
                                  ResourceNotFound, ServerError,
                                  UnAuthenticated, UselessRequest,
                                  save_notification, send_notification,
                                  send_response, validate_key_value, send_error, ErrorType)
-# Create your views here.
 
+# Create your views here.
 class UserCreateView(generics.CreateAPIView):
     permission_classes = [AllowAny]
-    serializer_class = User_CUD_Serializer
+    serializer_class = User_CD_Serializer
 
     def post(self, request, code, format=None):
         try:
@@ -33,7 +31,7 @@ class UserCreateView(generics.CreateAPIView):
 
         # Just in case the invitation instance wasn't deleted for some reason
         invited_by = invite.user if invite else None
-        serializer = User_CUD_Serializer(data=request.data)
+        serializer = User_CD_Serializer(data=request.data)
         if serializer.is_valid():
             serializer.save(invited_by=invited_by)
             if invite:
@@ -70,7 +68,6 @@ class LoginView(APIView):
         password = data.get('password', None)
         user = authenticate(email=email, password=password)
         if user is not None:
-            print(user)
             if user.is_active:
                 login(request, user)
                 data = get_tokens_for_user(user)
@@ -94,7 +91,7 @@ class AuthorSearchView(generics.ListAPIView):
     
 class CurrentUserView(viewsets.ModelViewSet):
     queryset = User.objects.filter(is_active=True)
-    serializer_class = User_GET_Serializer
+    serializer_class = User_GU_Serializer
 
     @action(detail=True, methods=['get'])
     def get_current_user(self, request):
@@ -115,7 +112,8 @@ class CurrentUserView(viewsets.ModelViewSet):
         """
         user = request.user
         data = request.data
-        serializer = User_CUD_Serializer(instance=user, data=data, partial=True)
+        
+        serializer = User_GU_Serializer(instance=user, data=data, partial=True)
         if not serializer.is_valid():
             raise BadRequest(serializer.errors)
         serializer.save()
@@ -148,7 +146,7 @@ class CurrentUserView(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def get_top_accounts(self, request, *args, **kwargs):
         top_accounts = User.objects.annotate(followers_count=models.F('userprofile__followers_count')).order_by('-followers_count')[:5]        
-        serializer = User_GET_Serializer(top_accounts, many=True, context={'request': request})
+        serializer = User_GU_Serializer(top_accounts, many=True, context={'request': request})
         return send_response(serializer.data, "top accounts retrieved successfully")
     
     @action(detail=False, methods=['get'])
@@ -160,13 +158,13 @@ class CurrentUserView(viewsets.ModelViewSet):
 
         mutual_friends_following = friends_following.filter(userprofile__following__in=current_user_friends).distinct()[:20]
 
-        serializer = User_GET_Serializer(mutual_friends_following, many=True)
+        serializer = User_GU_Serializer(mutual_friends_following, many=True)
         return send_response(serializer.data, "Mutual friends retrieved successfully")
 
 
 class UserProfileFollowAPIView(viewsets.ModelViewSet):
     queryset = UserProfile.objects.filter(user__is_active=True).select_related('user')
-    serializer_class = User_GET_Serializer
+    serializer_class = User_GU_Serializer
 
     @action(detail=True, methods=['post'])
     def follow(self, request, pk=None):
@@ -322,7 +320,7 @@ class UserProfileFollowAPIView(viewsets.ModelViewSet):
 
 
 class User_GET_View(generics.RetrieveAPIView):
-    serializer_class = User_GET_Serializer
+    serializer_class = User_GU_Serializer
     queryset = User.objects.filter(is_active=True)
 
     def get(self, request, username, *args, **kwargs):
@@ -330,7 +328,7 @@ class User_GET_View(generics.RetrieveAPIView):
             user = self.queryset.get(user_name=username)
         except:
             raise ResourceNotFound("User was not found")
-        serializer = User_GET_Serializer(user, context={'request': request})
+        serializer = User_GU_Serializer(user, context={'request': request})
         return send_response(serializer.data, "User retrieved successfully")
 
 
