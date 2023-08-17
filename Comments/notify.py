@@ -28,12 +28,12 @@ def comment_notification(instance, request, **kwargs):
         recipient = instance.immediate_parent.user
         if recipient != instance.user:
             if resource_type == "article":
-                notification = save_notification(user=recipient, message=f"Replied to your comment!", type="3", sender=instance.user, article=instance.parent.content_object, comment=instance.parent)
+                notification = save_notification(user=recipient, message=f"Replied to your comment!", type="3", sender=instance.user, article=instance.parent.content_object, comment=instance)
                 send_notification(recipient.id, notification, request)
             
             elif resource_type=="saying":
-                notification = save_notification(user=recipient, message=f"Replied to your comment!", type="3", sender=instance.user, saying=instance.parent.content_object, comment=instance.parent)
+                notification = save_notification(user=recipient, message=f"Replied to your comment!", type="3", sender=instance.user, saying=instance.parent.content_object, comment=instance)
                 send_notification(recipient.id, notification, request)
             else:
-                notification = save_notification(user=recipient, message=f"Replied to your comment!", type="3", sender=instance.user, poem=instance.parent.content_object, comment=instance.parent)
+                notification = save_notification(user=recipient, message=f"Replied to your comment!", type="3", sender=instance.user, poem=instance.parent.content_object, comment=instance)
                 send_notification(recipient.id, notification, request)

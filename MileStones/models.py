@@ -3,10 +3,12 @@ from django.utils.translation import gettext as _
 # Create your models here.
 
 
-class MileStoneType(models.Model):
-    TYPE_CHOICES = (
+TYPE_CHOICES = (
         ('10_invites', 'Get to your invitation limit'),
         
+        ('10_words', 'Contribute 10 words'),
+        ('20_words', 'Contribute 20 words'),
+        ('50_words', 'Contribute 50 words'),
         ('100_words', 'Contribute 100 words'),
         ('1000_words', 'Contribute 1000 words'),
         ('5000_words', 'Contribute 5000 words'),
@@ -30,7 +32,11 @@ class MileStoneType(models.Model):
         ('write_20_sentences', 'Write 20 sentences'),
         ('write_30_sentences', 'Write 30 sentences'),
         ('write_40_sentences', 'Write 40 sentences'),
-    )
+
+        ('report', 'Report bad content'),
+)
+
+class MileStoneType(models.Model):
 
     milestone_name = models.CharField(_("Name"), max_length=255, blank=False, null=True)
     milestone_type = models.CharField(_("Type"), max_length=255, choices=TYPE_CHOICES)
