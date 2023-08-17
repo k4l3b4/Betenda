@@ -1,6 +1,6 @@
 from Articles.models import Article
 from Comments.models import Comment
-from betenda_api.methods import save_notification, send_notification
+from Reactions.notify import reactions_notification
 from betenda_api.methods import compare_emojis
 from Contributions.models import Poem, Saying
 from Posts.models import Post
@@ -64,5 +64,7 @@ class Reaction_CREATE_View(APIView):
                 return send_response(None, 'Reaction deleted successfully')
             serializer.save(content_object=instance, user=user,
                             content_type=content_type)
+            if not existing_reaction:
+                reactions_notification(instance=serializer.instance, request=request, content_object=instance)
             return send_response(serializer.data, "Reacted successfully", 201)
         raise BadRequest(serializer.errors)
