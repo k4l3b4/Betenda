@@ -6,6 +6,7 @@ from Users.models import FollowerRequest
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from Notifications.models import Notification
+from BookMarks.models import BookMark
 from Reactions.models import Reaction, ReactionCount
 from django.contrib.contenttypes.models import ContentType
 from channels.layers import get_channel_layer
@@ -15,6 +16,22 @@ import cv2
 import os
 
 channel_layer = get_channel_layer()
+
+
+
+def get_bookmarked_method(self, obj):
+    requesting_user = self.context['request'].user
+
+    content_type = ContentType.objects.get_for_model(obj)
+    try:
+        bookmarked = BookMark.objects.get(user=requesting_user, content_type=content_type, object_id=obj.id)
+    except:
+        bookmarked = None
+
+    if bookmarked:
+        return True
+    return False
+
 
 def generate_video_thumbnail(video_path, thumbnail_path, frame_number=0):
     try:
