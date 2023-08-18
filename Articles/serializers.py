@@ -1,12 +1,11 @@
-from Users.serializers import User_CUD_Serializer
+from Users.serializers import User_CD_Serializer
 from Comments.models import Comment
-from betenda_api.methods import get_reactions_method
+from betenda_api.methods import get_bookmarked_method, get_reactions_method
 from rest_framework import serializers
 from .models import Article
 from django.contrib.contenttypes.models import ContentType
 
 class ArticleSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Article
         fields = [
@@ -49,9 +48,10 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 
 class ArticleGetSerializer(serializers.ModelSerializer):
-    authors = User_CUD_Serializer(many=True, read_only=True)
+    authors = User_CD_Serializer(many=True, read_only=True)
     reactions = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
+    bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -64,6 +64,7 @@ class ArticleGetSerializer(serializers.ModelSerializer):
             'image',
             'authors',
             'status',
+            'bookmarked',
             'comments_count',
             'featured',
             'published_date',
@@ -74,6 +75,9 @@ class ArticleGetSerializer(serializers.ModelSerializer):
     def get_reactions(self, obj):
         return get_reactions_method(self, obj)
     
+    def get_bookmarked(self, obj):
+        return get_bookmarked_method(self, obj)
+
     def get_comments_count(self, obj):
         '''
         takes in context and obj to retrieve reactions for the specific objects
@@ -89,9 +93,9 @@ class ArticleGetSerializer(serializers.ModelSerializer):
 
 # same serializer with only the body omitted since it will be to big to just leave it when unused
 class ArticleListSerializer(serializers.ModelSerializer):
-    authors = User_CUD_Serializer(many=True, read_only=True)
+    authors = User_CD_Serializer(many=True, read_only=True)
     reactions = serializers.SerializerMethodField()
-    comments_count = serializers.SerializerMethodField()
+    bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -102,8 +106,8 @@ class ArticleListSerializer(serializers.ModelSerializer):
             'desc',
             'image',
             'authors',
+            'bookmarked',
             'status',
-            'comments_count',
             'featured',
             'published_date',
             'modified_date',
@@ -113,19 +117,8 @@ class ArticleListSerializer(serializers.ModelSerializer):
     def get_reactions(self, obj):
         return get_reactions_method(self, obj)
     
-    def get_comments_count(self, obj):
-        '''
-        takes in context and obj to retrieve reactions for the specific objects
-        '''
-        comments_count = 0    
-        content_type = ContentType.objects.get_for_model(obj)
-
-        comments_count = Comment.objects.filter(
-            content_type=content_type, object_id=obj.id).count()
-
-        return comments_count
-    
-
+    def get_bookmarked(self, obj):
+        return get_bookmarked_method(self, obj)
 
 class Article_Notification_Serializer(serializers.ModelSerializer):
     class Meta:
