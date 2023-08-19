@@ -1,3 +1,4 @@
+from betenda_api.methods import validate_key_value
 from rest_framework import generics, filters
 from rest_framework.views import APIView
 from django.db.models import Count
@@ -85,6 +86,8 @@ class Article_CUD_View(APIView):
 
 
     def patch(self, request, *args, **kwargs):
+        id = request.GET.get('id')
+        validate_key_value(id, "ID")
         user = request.user
         user_id = str(user.id)
         data = request.data.copy()
@@ -110,12 +113,7 @@ class Article_CUD_View(APIView):
             for key, value in passable_data.items()
             if value is not None
         }
-        try:
-            id = request.data['id']
-        except:
-            raise BadRequest(
-                "Needed information was not included: resource ID")
-
+        print(passable_data)
         try:
             instance = Article.objects.get(id=id)
         except:
@@ -124,7 +122,7 @@ class Article_CUD_View(APIView):
         # check if the user is the main author or is Admin/has permission to edit articles
         if user.id == instance.authors.first().id or check_user_permissions(user=user, groups=groups, perms=perms):
             serializer = ArticleSerializer(instance=instance,
-                                        data=passable_data, partial=True)
+                                        data=passable_data, partial=True, context={'request': request})
             if not serializer.is_valid():
                 raise BadRequest(serializer.errors)
             serializer.save()
@@ -137,11 +135,9 @@ class Article_CUD_View(APIView):
         user = request.user
         groups = ['Admin']
         perms = ['Articles.delete_article']
-        try:
-            id = request.data['id']
-        except:
-            raise BadRequest(
-                "Needed information was not included: resource ID")
+        id = request.GET.get('id')
+        validate_key_value(id, "ID")
+        
         try:
             instance = Article.objects.get(id=id)
         except:
