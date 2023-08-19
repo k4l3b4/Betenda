@@ -1,5 +1,4 @@
-from betenda_api.methods import send_notification
-from betenda_api.methods import save_notification
+from betenda_api.methods import send_notification, save_notification
 
 def reactions_notification(instance, request, content_object, **kwargs):
     resource_type = instance.content_type.model.lower()

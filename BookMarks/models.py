@@ -5,6 +5,8 @@ from django.utils.translation import gettext as _
 
 # Create your models here.
 class BookMark(models.Model):
+    user = models.ForeignKey("Users.User", verbose_name=_(
+        "User"), on_delete=models.CASCADE, blank=False, db_index=True)
     content_type = models.ForeignKey(
         ContentType, verbose_name=_("Content type"), on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(_("Object id"))

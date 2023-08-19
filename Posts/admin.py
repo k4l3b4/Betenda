@@ -11,6 +11,7 @@ class Admin(admin.ModelAdmin):
         "id",
         "user",
         "content",
+        "parent",
         "created_at",
         "edited_at",
         )

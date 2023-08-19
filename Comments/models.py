@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext as _
 # Create your models here.
 
-
 class Comment(models.Model):
     user = models.ForeignKey(
         "Users.User", verbose_name=_("User"), on_delete=models.CASCADE)
@@ -20,6 +19,7 @@ class Comment(models.Model):
         ContentType, verbose_name=_("Content type"), on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(_("Object id"))
     content_object = GenericForeignKey('content_type', 'object_id')
+    
     def __str__(self):
         return f'{self.comment[:15]}.. by @{self.user.user_name}'
 

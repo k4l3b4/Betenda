@@ -1,7 +1,6 @@
 import re
 from django.db import models
 from django.utils.translation import gettext as _
-from filemime import filemime
 from django_extensions.db.fields import RandomCharField
 from django.contrib.contenttypes.fields import GenericRelation
 from HashTags.models import HashTag
@@ -29,6 +28,7 @@ class Post(models.Model):
         "HashTags.HashTag", blank=True, db_index=True)
     reactions = GenericRelation("Reactions.Reaction")
     report = GenericRelation("Reports.Report")
+    bookmark = GenericRelation("BookMarks.Bookmark")
     media_type = models.CharField(
         _("Media type"), max_length=20, choices=TYPE.choices, null=True, blank=True)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
@@ -82,3 +82,4 @@ class Post(models.Model):
     class Meta:
         verbose_name = _("Post")
         verbose_name_plural = _("Posts")
+        ordering = ('-created_at',)

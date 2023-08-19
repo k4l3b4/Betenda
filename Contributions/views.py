@@ -33,7 +33,7 @@ class Language_CUD_APIView(APIView):
                 return send_response(serializer.data, "Language registered successfully", 201)
             raise PermissionDenied("You don't have permission for this action")
         except:
-          return ServerError("There was an error on our side")
+          raise ServerError("There was an error on our side")
 
 
     def patch(self, request, *args, **kwargs):
@@ -95,8 +95,10 @@ class Word_CU_APIView(APIView):
             perms = ['Contributions.add_word']
             user = request.user
             mutable_data = request.data.copy()
-            mutable_data['synonym'] = [int(x) if x else None for x in mutable_data['synonym'] if x.strip()]
-            mutable_data['antonym'] = [int(x) if x else None for x in mutable_data['antonym'] if x.strip()]
+            # if mutable_data['synonym']:
+            #     mutable_data['synonym'] = [int(x) if x else None for x in mutable_data['synonym'] if x.strip()]
+            # if mutable_data['antonym']:
+            #     mutable_data['antonym'] = [int(x) if x else None for x in mutable_data['antonym'] if x.strip()]
             if check_user_permissions(user=user, groups=None, perms=perms):
                 serializer = self.serializer_class(data=mutable_data)
                 if not serializer.is_valid():
@@ -105,7 +107,7 @@ class Word_CU_APIView(APIView):
                 return send_response("Word added successfully", 201)
             raise PermissionDenied("You don't have permission for this action")
         except:
-          return ServerError("There was an error on our side")
+          raise ServerError("There was an error on our side")
 
 
     def patch(self, request, *args, **kwargs):
@@ -153,7 +155,7 @@ class Poem_GCU_APIView(APIView):
         return send_response(serializer.data, "Poem retrieved successfully", 200)
 
     def post(self, request, *args, **kwargs):
-        try:
+        # try:
             perms = ['Contributions.add_poem']
             user = request.user
 
@@ -164,8 +166,8 @@ class Poem_GCU_APIView(APIView):
                 serializer.save(user=user)
                 return send_response("Poem added successfully", 201)
             raise PermissionDenied("You don't have permission for this action")
-        except:
-          return ServerError("There was an error on our side")
+        # except:
+        #   return ServerError("There was an error on our side")
 
     def patch(self, request, *args, **kwargs):
         try:

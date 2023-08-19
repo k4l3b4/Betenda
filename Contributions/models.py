@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext as _
 from django.contrib.contenttypes.fields import GenericRelation
-
+from django_extensions.db.fields import RandomCharField
 
 # Create your models here.
 class Language(models.Model):
@@ -10,11 +10,11 @@ class Language(models.Model):
         TARGET = "TARGET", "Target"
 
     language = models.CharField(
-        _("Language name"), max_length=50, blank=False, null=True)
+        _("Language name"), max_length=150, blank=False, null=True)
     iso_code = models.CharField(
-        _("Language ISO code"), max_length=10, blank=False, null=True)
+        _("Language ISO code"), max_length=20, blank=False, null=True)
     glottolog_code = models.CharField(
-        _("Language Glottolog code"), max_length=10, blank=False, unique=True, null=True)
+        _("Language Glottolog code"), max_length=20, blank=False, unique=True, null=True)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
     edited_at = models.DateTimeField(
         _("Edited date"), blank=True, null=True, auto_now=True, auto_now_add=False)
@@ -61,13 +61,14 @@ class Poem(models.Model):
         "User"), on_delete=models.SET_NULL, blank=False, null=True)
     title = models.CharField(
         _("Title"), max_length=255, blank=False, db_index=True)
-    slug = models.SlugField(_("Slug"), max_length=255, blank=False, null=True)
+    slug = RandomCharField(
+        _("Slug"), length=20, unique=True, include_alpha=False, null=True)
     poem = models.TextField(_("Poem"), blank=False, unique=True, error_messages={
         "unique": "This poem has already been submitted."
     }, db_index=True)
     recording = models.FileField(_("Poem recording"), upload_to=None, max_length=100, blank=True, null=True)
     language = models.ForeignKey("Language", related_name="poem_language", verbose_name=_(
-        "Language"), on_delete=models.PROTECT)
+        "Language"), on_delete=models.PROTECT, blank=True, null=True)
     adult = models.BooleanField(_("18+ poem"), default=False)
     report = GenericRelation("Reports.Report")
     reactions = GenericRelation("Reactions.Reaction")

@@ -1,5 +1,4 @@
-from betenda_api.methods import send_notification
-from betenda_api.methods import save_notification
+from betenda_api.methods import send_notification, save_notification
 
 def comment_notification(instance, request, **kwargs):
     if not instance.parent:
