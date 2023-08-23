@@ -1,5 +1,7 @@
+from HashTags.models import UserHashtag
+from Posts.notify import reply_to_comment_notification
 from betenda_api.pagination import StandardResultsSetPagination
-from rest_framework import  viewsets
+from rest_framework import  filters, generics, viewsets
 from rest_framework.views import APIView
 from betenda_api.methods import BadRequest, PermissionDenied, ResourceNotFound, send_response, validate_key_value
 from rest_framework.decorators import action
@@ -12,7 +14,6 @@ class Post_List_GET_View(viewsets.ModelViewSet):
     Post list view
     '''
     queryset = Post.objects.filter(parent=None).select_related('user')
-
     @action(detail=True, methods=['get'])
     def list(self, request):
         posts = self.queryset.all().prefetch_related('reactions', 'post_parent')
@@ -41,17 +42,20 @@ class Post_List_GET_View(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def get_post(self, request, slug):
-        # Raises an exception if the key isn't present or is an empty string
-
-        # Filter posts with the given tag name in the hashtags ManyToMany field
         try:
-            posts = Post.objects.get(
+            post = Post.objects.get(
                 slug=slug)
         except:
             raise ResourceNotFound("The post was not found")
-        
+
+        tags = post.hashtags.all()
+        for tag in tags:
+            usertags, created = UserHashtag.objects.get_or_create(hashtag=tag, user=request.user)
+            usertags.score += 1
+            usertags.save()
+
         serializer = Thread_CUD_Serializer(
-            posts, context={'request': request})
+            post, context={'request': request})
 
         return send_response(serializer.data, "Post retrieved successfully")
 
@@ -60,7 +64,9 @@ class Post_List_GET_View(viewsets.ModelViewSet):
         tag = request.GET.get('tag')
         # Raises an exception if the key isn't present or is an empty string
         validate_key_value(tag, "Tag")
-
+        usertags, created = UserHashtag.objects.get_or_create(hashtag__tag=tag, user=request.user)
+        usertags.score += 1
+        usertags.save()
         # Filter posts with the given tag name in the hashtags ManyToMany field
         posts = self.queryset.prefetch_related(
             'reactions', 'post_parent', 'hashtags').filter(hashtags__tag=tag)
@@ -103,16 +109,25 @@ class Post_CUD_View(APIView):
         parent_id = request.GET.get('parent_id')
         parent = validate_key_value(
             parent_id, "parent ID", raise_exception=False)
+        try:
+            parent_object = Post.objects.get(id=parent_id)
+        except:
+            parent_object = None
 
         serializer = Post_CUD_Serializer(
             data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise BadRequest(serializer.errors)
-        if parent:
-            serializer.save(user=user, parent_id=parent_id)
+        if parent_object:
+            saved = serializer.save(user=user, parent_id=parent_id)
+            response_serializer = Thread_CUD_Serializer(saved, context={'request': request})
+            # if the user is replying to him self no need to send a notification
+            if not user == parent_object.user:
+                reply_to_comment_notification(instance=response_serializer.instance, post=parent_object, request=request)
         else:
-            serializer.save(user=user)
-        return send_response(serializer.data, "Post created successfully", 201)
+            saved = serializer.save(user=user)
+            response_serializer = Post_CUD_Serializer(saved, context={'request': request})
+        return send_response(response_serializer.data, "Post created successfully", 201)
 
     def patch(self, request, *args, **kwargs):
         user = request.user
@@ -154,3 +169,9 @@ class Post_CUD_View(APIView):
 
         instance.delete()
         return send_response(None, "Post deleted successfully")
+
+class Post_Search_View(generics.ListAPIView):
+    queryset = Post.objects.all().select_related('user').prefetch_related('reactions', 'post_parent')
+    serializer_class  = Post_CUD_Serializer
+    filter_backends = [filters.SearchFilter]   
+    search_fields = ['@content', '^hashtags__tag', '=hashtags__tag', 'user__first_name', 'user__last_name', 'user__user_name']

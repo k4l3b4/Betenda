@@ -164,6 +164,7 @@ class ErrorType(Enum):
     VERSION_ERROR = When the API version in the request is not valid \n
     PERMISSION_DENIED = When the user doesn't have permission to perform an action \n
     UNAUTHENTICATED = When the requesting client is not a user \n
+    UNAUTHORIZED = When the requesting client is not a user \n
     BAD_REQUEST = When the data that is sent over is not correct \n
     METHOD_NOT_ALLOWED = When the requested data is not found \n
     NOT_FOUND = When the requested data is not found \n
@@ -173,49 +174,16 @@ class ErrorType(Enum):
     UNKNOWN_ERROR = When there is an error that doesn't have a known type \n
     """
     VERSION_ERROR = 'Version_Error'
-    """
-    When the api version in the request is not valid
-    """
     PERMISSION_DENIED = 'Permission_Denied'
-    """
-    When the user doesn't have permission to perform an action
-    """
     UNAUTHENTICATED = 'Unauthenticated'
-    """
-    When the requesting client is not a user
-    """
     UNAUTHORIZED = 'Unauthorized'
-    """
-    When the user isn't within a certain group of user
-    """
     BAD_REQUEST = 'Bad_Request'
-    """
-    When the data that is sent over is not correct
-    """
     METHOD_NOT_ALLOWED = 'Method_Not_Allowed'
-    """
-    Https request method isn't allowed
-    """
     NOT_FOUND = 'Resource_Not_Found'
-    """
-    When the requested data is not found
-    """
     USELESS_REQUEST = 'Useless_Request'
-    """
-    When a request to the api is useless, ie trying to verify an email after it has already been verified
-    """
     SERVER_ERROR = 'Server_Error'
-    """
-    When there is a server error
-    """
     PAYMENT_REQUIRED = 'Payment_Required'
-    """
-    Optional if you may need/want to charge the community for certain features
-    """
     UNKNOWN_ERROR = 'Unknown_Error'
-    """
-    When there is an error that doesn't have a known type
-    """
 
 
 def send_error(err_type: ErrorType, err: str | dict, code: int = 400):
@@ -231,13 +199,36 @@ def send_error(err_type: ErrorType, err: str | dict, code: int = 400):
     return Response({"type": err_type.value, "error": err, "timestamp": timezone.now()}, status=code)
 
 
-def check_api_version(request, version, *args, **kwargs):
-    if not request.version:
-        raise BadRequest("Please include an API version in your request")
-    elif request.version != version:
-        return False
-    else:
-        return True
+
+def send_version_error(code, message="Version error"):
+    return send_error(ErrorType.VERSION_ERROR, message, code)
+
+def send_permission_error(code, message="You are not authorized to perform this action"):
+    return send_error(ErrorType.PERMISSION_ERROR, message, code)
+
+def send_authentication_error(code, message="Authentication error"):
+    return send_error(ErrorType.UNAUTHENTICATED, message, code)
+
+def send_authorization_error(code, message="Authorization error"):
+    return send_error(ErrorType.UNAUTHORIZED, message, code)
+
+def send_request_error(code, message="Request error"):
+    return send_error(ErrorType.BAD_REQUEST, message, code)
+
+def send_method_error(code, message="Request method error"):
+    return send_error(ErrorType.METHOD_NOT_ALLOWED, message, code)
+
+def send_not_found_error(code, message="Not found"):
+    return send_error(ErrorType.NOT_FOUND, message, code)
+
+def send_unused_error(code, message="Useless request"):
+    return send_error(ErrorType.USELESS_REQUEST, message, code)
+
+def send_payment_error(code, message="Payment error"):
+    return send_error(ErrorType.PAYMENT_REQUIRED, message, code)
+
+def send_server_error(code, message="Server error"):
+    return send_error(ErrorType.SERVER_ERROR, message, code)
 
 
 def check_user_permissions(user, perms=None, check_all_perms=False, groups=None):
@@ -325,12 +316,12 @@ def get_replies_count(self, obj):
 
 
 
-def save_notification(user, message, type="7", sender=None, post=None, article=None, comment=None):
+def save_notification(user, message, type="7", sender=None, post=None, reply=None, article=None, comment=None):
     '''
     save a notification
     '''
     notification = Notification.objects.create(
-        user=user, message_type=type, message=message, sender=sender, post=post, article=article, comment=comment)
+        user=user, message_type=type, message=message, sender=sender, post=post, reply=reply, article=article, comment=comment)
     # Implement logic to send the notification via email, push notification, etc.
     # For simplicity, we are only creating and returning the notification here
     return notification
@@ -342,7 +333,7 @@ def send_notification(user_id, object, request=None,  type="notify"):
     '''
     Send a realtime notification message to the specific user's channel group
     '''
-    # passing the request because self.scope won't help us construct absolute urls
+    # passing the serialized object here because self.scope in the consumer won't help us construct absolute urls
     if request:
         serializer = NotificationSerializer(object, context={'request': request })
     else:

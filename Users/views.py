@@ -1,6 +1,7 @@
 from django.contrib.auth import login
 from django.db import models
 from django.db.models import F, Q
+from Notifications.models import Notification
 from rest_framework import generics, viewsets
 from rest_framework.authentication import authenticate
 from rest_framework.decorators import action
@@ -98,11 +99,16 @@ class CurrentUserView(viewsets.ModelViewSet):
         """
         Returns the current user
         """
+        user = request.user
         user_instance = self.queryset.filter(
             pk=request.user.id).select_related('userprofile').first()
         serializer = self.serializer_class(
             user_instance, context={'request': request})
-        return send_response(serializer.data, "Self retrieved successfully")
+        unread_count = Notification.objects.filter(user=user, is_read=False).count()
+        data = serializer.data
+        data['unread_count'] = unread_count
+
+        return send_response(data, "Self retrieved successfully")
 
 
     @action(detail=True, methods=['patch'])

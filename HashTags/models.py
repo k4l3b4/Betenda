@@ -24,7 +24,7 @@ class UserHashtag(models.Model):
     Tags a user has subscribed to
     '''
     user = models.ForeignKey("Users.User", on_delete=models.CASCADE)
-    hashtag = models.OneToOneField('HashTag', related_name="user_tag", on_delete=models.CASCADE)
+    hashtag = models.ForeignKey('HashTag', related_name="user_tag", on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
     subscribed_at = models.DateTimeField(auto_now_add=True, auto_now=False)
     updated_at = models.DateTimeField(auto_now_add=False, auto_now=True)

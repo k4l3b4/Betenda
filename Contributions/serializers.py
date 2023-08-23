@@ -1,5 +1,5 @@
 from betenda_api.methods import get_reactions_method
-from rest_framework.fields import MinLengthValidator
+from rest_framework.fields import MaxLengthValidator, MinLengthValidator
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 from .models import Poem, Saying, Sentence, Word, Language
@@ -7,9 +7,9 @@ from .models import Poem, Saying, Sentence, Word, Language
 
 class LanguageSerializer(serializers.ModelSerializer):
     language = serializers.CharField(
-        validators=[UniqueValidator(queryset=Language.objects.all())])
+        validators=[UniqueValidator(queryset=Language.objects.all()), MaxLengthValidator(150)])
     glottolog_code = serializers.CharField(
-        validators=[UniqueValidator(queryset=Language.objects.all())])
+        validators=[UniqueValidator(queryset=Language.objects.all()), MaxLengthValidator(20)])
 
     class Meta:
         model = Language

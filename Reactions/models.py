@@ -59,20 +59,72 @@ class Reaction(models.Model):
                            'content_type', 'object_id')
 
     def save(self, *args, **kwargs):
-        created = self.pk is None  # Check if it's a new reaction
-        super().save(*args, **kwargs)
-
-        if created:
-            content_type = ContentType.objects.get_for_model(
-                self.content_object)
+        from Reactions.methods import update_reaction_count
+        created = not self.pk  # Check if the instance is being created or updated
+        id = self.pk
+        object_id = self.object_id
+        previous_reaction = None
+        if not created:
             try:
-                reaction_count = ReactionCount.objects.get(
-                    reaction=self.reaction, content_type=content_type, object_id=self.object_id)
-                reaction_count.count += 1
-                reaction_count.save()
-            except ReactionCount.DoesNotExist:
-                ReactionCount.objects.create(
-                    reaction=self.reaction, content_type=content_type, object_id=self.object_id, count=1)
+                previous_reaction = Reaction.objects.get(pk=id)
+            except Reaction.DoesNotExist:
+                pass
+
+        # You should replace 'self.reaction', 'self.content_type', and 'self.object_id'
+        # with the actual values corresponding to the reaction being saved.
+        content_type = ContentType.objects.get_for_model(
+                        self.content_object)
+
+        # Call the function to update the reaction count.
+        update_reaction_count(created, previous_reaction, self.reaction, content_type, object_id)
+
+        super(Reaction, self).save(*args, **kwargs)
+
+
+    # def save(self, *args, **kwargs):
+        # created = self.pk is None  # Check if it's a new reaction
+        # if not created:
+        #     try:
+        #         previous_reaction = Reaction.objects.get(id=self.pk)
+        #     except:
+        #         previous_reaction = None
+
+        # super().save(*args, **kwargs)
+        # content_type = ContentType.objects.get_for_model(
+        #         self.content_object)
+        # if created:
+        #     try:
+        #         reaction_count = ReactionCount.objects.get(
+        #             reaction=self.reaction, content_type=content_type, object_id=self.object_id)
+        #         reaction_count.count += 1
+        #         reaction_count.save()
+        #     except ReactionCount.DoesNotExist:
+        #         ReactionCount.objects.create(
+        #             reaction=self.reaction, content_type=content_type, object_id=self.object_id, count=1)
+        # else:
+        #     try:
+        #         old_reaction_count = ReactionCount.objects.get(
+        #             reaction=previous_reaction.reaction, content_type=content_type, object_id=previous_reaction.object_id
+        #         )
+        #         if old_reaction_count.count <= 1:
+        #             old_reaction_count.delete()
+        #         else:
+        #             old_reaction_count.count -= 1
+        #             old_reaction_count.save()
+
+        #         try:
+        #             reaction_count = ReactionCount.objects.get(
+        #                 reaction=self.reaction, content_type=content_type, object_id=self.object_id)
+        #             reaction_count.count += 1
+        #             reaction_count.save()
+        #         except ReactionCount.DoesNotExist:
+        #             ReactionCount.objects.create(
+        #                 reaction=self.reaction, content_type=content_type, object_id=self.object_id, count=1)
+                    
+        #     except ReactionCount.DoesNotExist:
+        #         ReactionCount.objects.create(
+        #             reaction=self.reaction, content_type=content_type, object_id=self.object_id, count=1)
+
 
     def delete(self, *args, **kwargs):
         content_type = ContentType.objects.get_for_model(self.content_object)

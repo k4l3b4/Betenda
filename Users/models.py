@@ -1,13 +1,27 @@
-import random
-import string
+import os
+import uuid
 from django.db import models
+from django.contrib.auth.models import Permission
 from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         Group, PermissionsMixin)
 from Users.fields import IntegerRangeField
 from django_extensions.db.fields import RandomCharField
 # Create your models here.
+from django.utils.deconstruct import deconstructible
+from django.dispatch import receiver
+
+@deconstructible
+class UniqueFileName:
+    def __init__(self, sub_path):
+        self.sub_path = sub_path
+
+    def __call__(self, instance, filename):
+        ext = filename.split('.')[-1]
+        unique_name = f"{uuid.uuid4()}.{ext}"
+        return os.path.join(self.sub_path, unique_name)
 
 
 class CustomAccountManager(BaseUserManager):
@@ -64,12 +78,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(
         _("Last name"), max_length=150, blank=False, null=True)
     user_name = models.CharField(
-        _("User name"), max_length=50, blank=False)
+        _("User name"), max_length=50, blank=False, db_index=True)
     bio = models.CharField(_("Bio"), max_length=255, blank=False, null=True)
     sex = models.CharField(
         _("Sex"), max_length=50, choices=SEX.choices, default=None, blank=True, null=True)
-    profile_avatar = models.ImageField(
-        _("Profile photo"), upload_to='user/profile', max_length=None, blank=True, null=True)
+    profile_avatar = models.ImageField(_("Profile avatar"), upload_to=UniqueFileName('user/profile'), max_length=400, blank=True, null=True)
+    profile_cover = models.ImageField(_("Profile cover"), upload_to=UniqueFileName('user/profile/cover'), max_length=400, blank=True, null=True)
     birth_date = models.DateField(
         _("Birth day"), auto_now=False, auto_now_add=False, blank=True, null=True)
     invited_by = models.ForeignKey('self', verbose_name=_(
@@ -108,8 +122,30 @@ class User(AbstractBaseUser, PermissionsMixin):
         is_new_instance = not self.pk
         super().save(*args, **kwargs)
         if is_new_instance:
-            Invitation.objects.create(user=self)
+            if self.invited_by:
+                word_content_type = ContentType.objects.get(app_label='your_app_name', model='word')
+                # Assuming you have a User instance called "user"
+                # Get the permission
+                add_word_permission = Permission.objects.get(codename='add_word', content_type=word_content_type)
+                # Assign the permission to the user
+                self.user_permissions.add(add_word_permission)
+                # ======
+                Invitation.objects.create(user=self)
             UserProfile.objects.create(user=self)
+        
+    # @receiver(models.signals.pre_save, sender="Users.User")
+    # def server_delete_files(sender, instance, **kwargs):
+
+    #     if instance.id is not None:
+    #         for field in instance._meta.fields:
+    #             if field.name == "profile_avatar":
+    #                 file = getattr(instance, field.name)
+    #                 if file:
+    #                     file.delete(save=False)
+    #             if field.name == "profile_cover":
+    #                 file = getattr(instance, field.name)
+    #                 if file:
+    #                     file.delete(save=False)
 
 
 class UserProfile(models.Model):
@@ -132,17 +168,36 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.user_name} Followers: {self.followers_count}, Following: {self.following_count}"
 
+    def get_friends(self):
+        user_followers = self.followers.all()
+        user_following = self.following.all()
+        mutual_friends = user_followers.filter(userprofile__followers__in=user_following)
+        return mutual_friends
+
     def is_followed_by(self, user):
         """
         Check if the given user is being followed by the requesting user.
         """
-        return self.followers.filter(id=user.id).exists()
+        try:
+          exists = self.followers.get(id=user.id)
+        except:
+          return False
+        
+        if exists:
+            return True
 
     def is_following(self, user):
         """
         Check if the requesting user is following the given user.
         """
-        return self.following.filter(id=user.id).exists()
+        try:
+          exists = self.following.get(id=user.id)
+        except:
+          return False
+        
+        if exists:
+            return True
+
 
     class Meta:
         verbose_name = _("User Profile")
@@ -151,7 +206,7 @@ class UserProfile(models.Model):
 
 class FollowerRequest(models.Model):
     user_profile = models.ForeignKey(
-        UserProfile, on_delete=models.CASCADE, verbose_name=_("User profile"), db_index=True)
+        UserProfile, on_delete=models.CASCADE, related_name="follower_request" ,verbose_name=_("User profile"), db_index=True)
     follower = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name=_("Follower"), db_index=True)
     is_approved = models.BooleanField(_("Approved"), default=False)

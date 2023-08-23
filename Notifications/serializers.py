@@ -23,6 +23,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             'user',
             'sender',
             'post',
+            'reply',
             'article',
             'poem',
             'comment',

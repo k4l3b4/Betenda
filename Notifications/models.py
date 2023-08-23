@@ -14,15 +14,16 @@ class Notification(models.Model):
         )
     
     sender = models.ForeignKey('Users.User', verbose_name=_("Sender"), related_name='from_user', blank=True, null=True, on_delete=models.CASCADE)
-    user = models.ForeignKey('Users.User', verbose_name=_("Recipient"), related_name='to_user', on_delete=models.CASCADE)
+    user = models.ForeignKey('Users.User', verbose_name=_("Recipient"), related_name='to_user', on_delete=models.CASCADE, db_index=True)
     post = models.ForeignKey('Posts.Post', related_name='notifiable_post', blank=True, null=True, on_delete=models.SET_NULL)
+    reply = models.ForeignKey('Posts.Post', related_name='notifiable_post_reply', blank=True, null=True, on_delete=models.SET_NULL)
     article = models.ForeignKey('Articles.Article', related_name='notifiable_article', blank=True, null=True, on_delete=models.SET_NULL)
     poem = models.ForeignKey('Contributions.Poem', related_name='notifiable_article', blank=True, null=True, on_delete=models.SET_NULL)
     comment = models.ForeignKey('Comments.Comment', related_name='notifiable_article', blank=True, null=True, on_delete=models.SET_NULL)
     message = models.TextField(_("Message"))
     message_type = models.CharField(
-        _("Message type"), choices=TYPES, default="7", max_length=50)
-    is_read = models.BooleanField(_("Is read"), default=False)
+        _("Message type"), choices=TYPES, default="7", max_length=50, db_index=True)
+    is_read = models.BooleanField(_("Is read"), default=False, db_index=True)
     created_at = models.DateTimeField(_("Created date"), auto_now_add=True)
 
     def mark_as_read(self):
